@@ -88,6 +88,83 @@ When you're done, deactivate the environment:
 conda deactivate
 ```
 
+## 📁 Project Structure
+
+```
+AI-Powered-Rehabilitation-Coaching-System/
+│
+├── README.md                        # This file — system overview
+├── rehab_ai_env.yml                 # Conda environment specification
+├── .env / .env.example              # Environment variables (API keys, model configs)
+├── .gitignore                       # Ensure chroma_db & .env are ignored
+│
+├── data/
+│   ├── pt_guideline_data/           # Physical therapy guidelines & protocols
+│   ├── chroma_db/                   # Vector database (gitignored)
+│   └── exercise_cache/              # Pre-computed Tier 1 response JSONs
+│
+├── notebooks/                       # Jupyter notebooks for exploration & evaluation
+│   ├── llm_comprehensive_evaluation.ipynb
+│   ├── validated_test_questions.json
+│   └── evaluation_results/
+│
+├── src/                             # Production code
+│   │
+│   ├── cv/                          # Computer Vision pipeline
+│   │   ├── __init__.py
+│   │   ├── pose_estimator.py        # MediaPipe / OpenPose wrapper
+│   │   ├── depth_estimator.py       # Depth Anything integration
+│   │   ├── fusion.py                # 2D pose + depth → 3D
+│   │   └── schemas.py               # CoachingEvent dataclass / Pydantic models
+│   │
+│   ├── integration/                 # Integration layer (CV → LLM bridge)
+│   │   ├── __init__.py
+│   │   ├── event_filter.py          # Temporal filtering, severity scoring
+│   │   ├── deduplicator.py          # Prevents repetitive coaching cues
+│   │   └── router.py                # Routes to Tier 1 / 2 / 3
+│   │
+│   ├── rag/                         # Retrieval-Augmented Generation
+│   │   ├── __init__.py
+│   │   ├── ingest.py                # Chunk & embed PT guidelines → ChromaDB
+│   │   ├── retriever.py             # Query interface over ChromaDB
+│   │   └── prompt_templates.py      # Tier 2 slot-based prompts
+│   │
+│   ├── agents/                      # LangGraph multi-agent system
+│   │   ├── __init__.py
+│   │   ├── state.py                 # Shared LangGraph state schema
+│   │   ├── movement_analysis.py     # Movement Analysis Agent
+│   │   ├── coaching.py              # Coaching Agent (conversational memory)
+│   │   ├── progress.py              # Progress Tracking Agent
+│   │   └── orchestrator.py          # LangGraph graph definition & routing
+│   │
+│   ├── feedback/                    # Feedback generation & delivery
+│   │   ├── __init__.py
+│   │   ├── tier1_cache.py           # Load/serve pre-computed audio cues
+│   │   ├── tier2_generator.py       # RAG + GPT-4o-mini generation
+│   │   ├── tier3_reasoner.py        # Full agent reasoning pass
+│   │   └── delivery.py              # Timing logic (immediate / rep-end / rest)
+│   │
+│   └── utils/
+│       ├── __init__.py
+│       ├── config.py                # Load .env, model names, thresholds
+│       └── logging.py               # Logging utilities
+│
+├── tests/                           # Unit & integration tests
+│   ├── test_event_filter.py
+│   ├── test_retriever.py
+│   ├── test_agents.py
+│   └── test_tier_routing.py
+│
+├── scripts/                         # One-off runnable scripts
+│   ├── ingest_pt_data.py            # Populate ChromaDB with PT guidelines
+│   ├── build_tier1_cache.py         # Pre-compute top mistake responses
+│   └── run_demo.py                  # End-to-end demo runner
+│
+└── docs/
+    ├── architecture.html            # System architecture & design
+    └── api_contracts.md             # CV ↔ Integration ↔ LLM interface specs
+```
+
 ## Why This Matters
 
 Incorrect exercise performance and low adherence are well-documented causes of prolonged recovery times and increased healthcare costs. By combining state-of-the-art **pose estimation**, **generative AI**, and **personalized retrieval**, VPA aims to bring high-quality, 24/7 physiotherapy guidance to anyone with a smartphone or laptop.
