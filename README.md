@@ -1,7 +1,6 @@
 # AI-Powered-Rehabilitation-Coaching-System
 
-![Project Banner / Demo GIF Placeholder](https://via.placeholder.com/1200x400.png?text=Virtual+Physiotherapy+Assistant+Demo)  
-*(Add a short demo GIF or screenshot here later — highly recommended!)*
+Project Banner
 
 ## 🎯 The Problem
 
