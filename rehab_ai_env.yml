@@ -1,0 +1,71 @@
+name: rehab_ai_env
+channels:
+  - conda-forge
+  - pytorch
+dependencies:
+  - python=3.11
+  - pip
+
+  # --- Core scientific stack (via conda for best compatibility) ---
+  - numpy
+  - pandas
+  - matplotlib
+  - seaborn
+  - scikit-learn
+  - tqdm
+  - pyyaml
+
+  # --- Computer Vision (via conda) ---
+  - opencv
+
+  # --- PyTorch (CPU-only, via conda) ---
+  - pytorch
+  - torchvision
+  - torchaudio
+  - cpuonly
+
+  # --- Jupyter ---
+  - jupyter
+  - notebook
+  - ipykernel
+
+  - pip:
+      # --- Computer Vision ---
+      - mediapipe==0.10.14
+
+      # --- RAG / Vector DB ---
+      - chromadb>=0.4.0
+      - sentence-transformers>=2.2.0
+
+      # --- LangChain / LangGraph ---
+      - langchain>=0.1.0
+      - langchain-community>=0.0.10
+      - langgraph>=0.0.20
+
+      # --- LLM Clients ---
+      - openai>=1.0.0
+      - anthropic>=0.40.0
+      - ollama>=0.1.0
+
+      # --- Document / Data Parsing ---
+      - pypdf>=3.0.0
+      - PyPDF2>=3.0.0
+      - python-docx>=1.0.0
+      - beautifulsoup4>=4.12.0
+
+      # --- Visualization ---
+      - plotly>=5.14.0
+
+      # --- Utilities ---
+      - python-dotenv>=1.0.0
+
+      # --- Transformers / Accelerate (for open-source LLMs) ---
+      - transformers>=4.30.0
+      - accelerate>=0.20.0
+      - bitsandbytes>=0.41.0
+
+      # --- Optional: NLP ---
+      - spacy>=3.5.0
+
+      # --- Optional: Medical/Biomedical embeddings ---
+      # - bio-embeddings>=0.2.0

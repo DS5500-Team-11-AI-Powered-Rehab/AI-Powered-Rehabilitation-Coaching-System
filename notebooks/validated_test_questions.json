@@ -1,0 +1,291 @@
+[
+  {
+    "question": "I've been told I have shoulder impingement. What exercises should I start with at home?",
+    "ground_truths": [
+      "Start with isometric exercises — gentle contractions where the muscle works without moving the joint. Begin with isometric external rotation: bend your elbow to 90 degrees with a rolled-up towel under your armpit, and gently push outward against your other hand or a wall. Hold for 10 seconds, repeat 5 times, 4 times per day. Each week increase the hold time by 10 seconds (up to 40 seconds by week 4). Also do isometric shoulder abduction and internal rotation in the same pattern. Once these become easy, progress to resistance band exercises such as band pull-aparts with elbows at your sides (1 set of 15 reps building to 3 sets of 15).",
+      "Begin with isometric exercises — gently push your arm against a wall or your other hand without actually moving the joint. Do these holds for 10–40 seconds, 5 times each, 4 times daily. Also try pendulum swings and assisted shoulder flexion lying on your back with a walking stick. Progress to resistance band external rotation and rowing exercises when isometrics feel easy.",
+      "Start with gentle isometric holds (pushing against a wall without movement) for the shoulder, pendulum exercises, and assisted range of motion. Aim to exercise at least 4 times per week and progress gradually through difficulty levels."
+    ],
+    "category": "Shoulder - Exercise instructions",
+    "complexity": "Basic",
+    "body_region": "Shoulder"
+  },
+  {
+    "question": "My shoulder hurts when I exercise. How much pain is okay, and how do I know if I'm overdoing it?",
+    "ground_truths": [
+      "Aim to keep your pain under 5 out of 10 during exercise. If pain exceeds this, modify by reducing the range of movement, number of repetitions, weight, speed, or by increasing rest between sets. After exercising, your pain should return to your pre-exercise baseline within 30 minutes. You should NOT feel increased pain or stiffness the next morning (though some general muscle soreness from new exercises is normal). It is acceptable to have some discomfort during rehab if it's tolerable and you're slowly progressing over time — you are not damaging your shoulder.",
+      "Some discomfort during exercises is normal and acceptable, but keep pain below 5/10. Your symptoms should settle within 30 minutes after exercising and not be worse the next morning. If pain is over 5/10, reduce the exercise intensity."
+    ],
+    "category": "Shoulder - Safety and pain monitoring",
+    "complexity": "Intermediate",
+    "body_region": "Shoulder"
+  },
+  {
+    "question": "How long does it take for shoulder impingement to get better?",
+    "ground_truths": [
+      "With a consistent exercise programme, you can expect to notice a great improvement in around 12 weeks. However, rehabilitation programmes begin with a minimum of 6 weeks and shoulder strength improvements can continue for 12 to 18 months. If your shoulder does not improve over 12 weeks, or gets worse despite the exercises, contact your health professional. Exercises should be performed at least 4 times per week for best results.",
+      "Most rehabilitation programmes for shoulder impingement require a minimum of 12 weeks of consistent exercise before significant improvement. Strength gains can continue for up to 12–18 months. If you see no improvement in 6 weeks, or symptoms worsen, seek further advice."
+    ],
+    "category": "Shoulder - Expected outcomes",
+    "complexity": "Basic",
+    "body_region": "Shoulder"
+  },
+  {
+    "question": "What are the best exercises to strengthen my rotator cuff?",
+    "ground_truths": [
+      "A comprehensive program includes both isolation and compound exercises. For isolation: (1) Side-lying external rotation — lie on your non-injured side with your top arm's elbow bent to 90°, hold a light weight (start with 1 kg), and rotate your arm outward keeping the elbow at your side, 3–4 sets of 10–20 reps. (2) Standing band external rotation — elbow at 90° pinned at your side, rotate outward against a resistance band. (3) Internal rotation with a band or cable. For compound exercises: rowing movements (squeeze shoulder blades together) and wall press-ups. Perform exercises 2–3 times per week for a minimum of 12 weeks.",
+      "Key rotator cuff exercises include: side-lying external rotation with a light dumbbell (6–8 reps × 4 sets, starting with ~1 kg), resistance band external rotation with elbow bent at 90°, band rows squeezing shoulder blades together (hold 3 seconds, 10 reps × 4 sets), and wall press-ups. A rolled-up towel between your elbow and side helps maintain proper form.",
+      "Focus on external rotation exercises (side-lying with a small weight or standing with a resistance band), rows to strengthen the scapular muscles, and progress to compound pushing/pulling exercises. Aim for 3–4 sets of 10–20 reps, 2–3 times per week."
+    ],
+    "category": "Shoulder - Exercise instructions",
+    "complexity": "Intermediate",
+    "body_region": "Shoulder"
+  },
+  {
+    "question": "I have a rotator cuff tear — is it safe to exercise, or will it make the tear worse?",
+    "ground_truths": [
+      "Exercise is safe and is the first-line recommendation for most rotator cuff tears. Research shows that shoulder activity level is not related to tear progression risks, tears don't always progress in size, and an increase in tear size doesn't necessarily worsen function or symptoms. Non-operative management (exercise) is as effective as surgery for improving pain, function, and quality of life. Some discomfort during rehab is acceptable if tolerable and you're slowly progressing.",
+      "Yes, exercise is safe and strongly recommended. Current evidence shows non-operative management is as effective as surgery for most rotator cuff tears, including large tears. You're not damaging your shoulder by exercising. Start gently and progress gradually.",
+      "Exercise is safe and recommended as the first treatment for rotator cuff tears. Activity does not reliably worsen tears."
+    ],
+    "category": "Shoulder - Safety and contraindications",
+    "complexity": "Intermediate",
+    "body_region": "Shoulder"
+  },
+  {
+    "question": "I've been diagnosed with frozen shoulder. How long will this last and what should I expect?",
+    "ground_truths": [
+      "Frozen shoulder progresses through three overlapping phases: (1) Freezing phase (2–9 months) — progressive pain, worst at night, with increasing stiffness; (2) Frozen phase (4–12 months) — pain decreases but stiffness is the dominant symptom; (3) Thawing phase (4–12 months) — gradual return of movement and function. The full natural course is typically 12–42 months. About 15% of people experience some ongoing residual stiffness.",
+      "Frozen shoulder goes through three stages: freezing (painful, 2–9 months), frozen (stiff but less painful, 4–12 months), and thawing (gradual recovery, 4–12 months). Total duration is usually 1–3 years. The pain and stiffness will usually resolve eventually, though it can be a slow process."
+    ],
+    "category": "Shoulder - Expected outcomes",
+    "complexity": "Basic",
+    "body_region": "Shoulder"
+  },
+  {
+    "question": "I have shoulder impingement — are there certain exercises or movements I should stay away from?",
+    "ground_truths": [
+      "Current evidence suggests there are no inherently 'bad' exercises for shoulder impingement. Research shows that impingement commonly occurs even in people without shoulder pain. The surgery designed to fix impingement (subacromial decompression) has been shown to be no more effective than placebo surgery or exercise alone. What matters more is managing the load — temporarily modify activities that significantly aggravate your symptoms, and gradually build your shoulder's capacity with progressive exercises.",
+      "No specific exercises need to be permanently avoided. The key is to temporarily reduce activities that significantly worsen symptoms while building shoulder strength through progressive exercises. Upright rows and overhead movements are not inherently dangerous — what matters is progressing gradually and managing load appropriately."
+    ],
+    "category": "Shoulder - Safety and contraindications",
+    "complexity": "Intermediate",
+    "body_region": "Shoulder"
+  },
+  {
+    "question": "I just had my ACL reconstructed. What exercises should I be doing in the first few weeks after surgery?",
+    "ground_truths": [
+      "Focus on: (1) Quad sets — tighten your thigh muscles, pushing the back of your knee into the bed while pulling toes toward you, hold 5–10 seconds, repeat 6–12 times, 2–3 sets, little and often throughout the day; (2) Ankle pumps — at least every couple of hours, 8–15 times; (3) Heel slides — slide your heel toward your bottom to bend the knee, gradually increasing range; (4) Straight leg raises — 3 sets of 10–20 reps; (5) Heel props for knee extension — prop your heel on a towel roll for 10 minutes, 3–5 times per day. Full knee extension is a critical early goal.",
+      "The primary goal of early ACL rehab is restoring knee extension range of motion. Prop your heel for 10 minutes, 3–5 times per day. Do quad sets all day, every day — one well-known protocol recommends up to 1,000 quad set repetitions per day. Progress to heel slides with a strap (sets of 20 reps, 2–3x/day). The first major milestone is performing a straight leg raise with your knee completely straight.",
+      "Early ACL rehab focuses on restoring knee straightening, activating your quadriceps with quad sets, performing ankle pumps, doing gentle heel slides, and progressing to straight leg raises. Exercises should be done 3–4 times per day without forcing through pain."
+    ],
+    "category": "Knee - Exercise instructions",
+    "complexity": "Basic",
+    "body_region": "Knee"
+  },
+  {
+    "question": "When can I go back to playing football after my ACL reconstruction? What do I need to be able to do first?",
+    "ground_truths": [
+      "Return to pivoting sports typically takes a minimum of 9–12 months post-surgery. Time alone is not sufficient — you must meet specific functional criteria. Research found that athletes who returned before 9 months had a reinjury rate 7 times higher. Key return-to-sport criteria include: quadriceps strength index ≥90% compared to the uninjured leg; passing single-leg hop tests (single hop, crossover hop, triple hop, 6-meter timed hop) with ≥90% limb symmetry index; full, pain-free range of motion; no effusion; and psychological readiness.",
+      "Most people need at least 9–12 months before returning to sports involving twisting, pivoting, or cutting. You need to demonstrate at least 90% strength symmetry between legs, pass functional hop tests with ≥90% limb symmetry, have full pain-free range of motion, no swelling, and show psychological readiness. Returning too early significantly increases re-injury risk."
+    ],
+    "category": "Knee - Treatment progression",
+    "complexity": "Advanced",
+    "body_region": "Knee"
+  },
+  {
+    "question": "My physio told me to do quad sets after my ACL surgery, but I'm not sure I'm doing them right. How exactly do I do them?",
+    "ground_truths": [
+      "Lie on your back with your knee straight. Tighten your thigh muscles by pulling your toes towards you and pressing the back of your knee down into the bed or floor. You should see the muscle at the front of your thigh tighten and feel your kneecap move slightly upward. Hold for 5–10 seconds, then relax. Repeat 6–12 times, in 2–3 sets. Do this little and often throughout the day.",
+      "Lie on your back with your knee straight. Push the knee of your operative leg flat against the surface to tighten the top of the thigh. Hold the thigh muscle tight for 10 seconds, relax, and repeat. You can progress by propping your heel on a towel roll to add a knee extension stretch while doing the quad set. Do them as frequently as possible — this is one exercise you cannot overdo."
+    ],
+    "category": "Knee - Exercise form",
+    "complexity": "Basic",
+    "body_region": "Knee"
+  },
+  {
+    "question": "I've been told I have osteoarthritis in my knee. What exercises should I be doing to help with the pain and stiffness?",
+    "ground_truths": [
+      "Both strengthening and aerobic exercise are recommended as first-line treatment for knee osteoarthritis. Key exercises include: quad sets (hold 5 seconds), inner range quadriceps with a rolled towel under the knee, straight leg raises, bridging, wall squats or sit-to-stands, standing heel raises, and step-downs (8–12 reps, 3 times a day). Include stretches: quadriceps stretch (hold 30 seconds, repeat 5 times), hamstring stretch, calf stretch. Walking, cycling, swimming, tai chi, and yoga are all beneficial. Start with 2–3 reps and gradually build up.",
+      "There is no single superior exercise for knee OA. Resistance training, aerobic exercise, aquatic exercise, tai chi, and yoga have all demonstrated improvements in pain and function. Choose activities you enjoy and aim for at least 150–300 minutes of moderate-intensity aerobic activity per week AND muscle-strengthening activities at least 2 days per week. Mild to moderate knee discomfort during exercise is safe and does not indicate damage.",
+      "Exercise regularly — it helps strengthen muscles around the knee and can help with weight management. It may take at least 12 weeks of strengthening and stretching exercises several times per day before noticeable improvement. Rest and avoidance of exercise actually makes pain worse, especially long term."
+    ],
+    "category": "Knee - Exercise instructions",
+    "complexity": "Basic",
+    "body_region": "Knee"
+  },
+  {
+    "question": "My doctor said I have knee osteoarthritis. Someone suggested PRP injections and knee arthroscopy — are those good options?",
+    "ground_truths": [
+      "Multiple clinical practice guidelines consistently and strongly recommend AGAINST the use of stem cell injections, PRP injections, and knee arthroscopy for knee osteoarthritis management. A Cochrane review found that arthroscopic surgery provides 'little or no clinically important benefit' for knee OA. First-line treatment should be exercise, weight management, education, and potentially NSAIDs or corticosteroid injections.",
+      "Current evidence-based guidelines recommend against stem cell injections, PRP injections, and arthroscopic surgery for knee OA. Focus instead on exercise (both strengthening and aerobic), weight management, education about self-management, and anti-inflammatories if needed."
+    ],
+    "category": "Knee - Safety and contraindications",
+    "complexity": "Intermediate",
+    "body_region": "Knee"
+  },
+  {
+    "question": "I've got pain around my kneecap, especially going up and down stairs. My physio said it's patellofemoral pain. What exercises should I do?",
+    "ground_truths": [
+      "The primary treatment is a combination of hip and quadriceps strengthening exercises — hip and knee strengthening together is more effective than knee strengthening alone. Exercises include: single-leg squats, step-downs, squats, lunges, and hip exercises using resistance bands (clamshells, side-lying hip abduction, bridging). High-volume exercises are most effective — aim for 3 sets of 30 or more repetitions, 3 times per week. Pain during exercises should stay below 3/10.",
+      "There are no inherently 'good' or 'bad' exercises — there are exercises that create more or less stress at the patellofemoral joint. Start with lower-stress exercises (hip hinges, partial squats) and gradually progress toward higher-stress options (full squats, heel-elevated squats). Strengthening your quads is essential. Isometric quad exercises with the knee fully extended (like straight leg raises) minimize patellofemoral joint stress and are good starting points.",
+      "Start with pain-free isometric exercises: straight leg raises (elevate extended leg, hold 10 seconds). Progress to wall squats, step-ups, and pillow squeezes. Include hip strengthening — clamshells, side-lying hip abduction, bridges. Include proprioceptive training as decreased proprioception is found in people with PFPS."
+    ],
+    "category": "Knee - Exercise instructions",
+    "complexity": "Intermediate",
+    "body_region": "Knee"
+  },
+  {
+    "question": "My knee makes grinding and cracking sounds when I bend it, especially doing squats. Does this mean I'm damaging my knee?",
+    "ground_truths": [
+      "Knee crepitus (grinding, cracking, popping sounds) is very common and is NOT an indication that exercise is dangerous or harmful. A study found that knee crepitus has 'no negative impact on function, physical activity level, and pain.' Crepitus was also present in 33% of people with no knee pain at all. Focus on whether the exercises are causing significant increases in pain or swelling — those are the meaningful signals.",
+      "Grinding or cracking noises from your knee are common and usually not a sign of damage. Research shows crepitus has no negative impact on function or pain outcomes. Continue exercising as long as pain stays manageable (below 3–5/10). Only stop if there is a sudden increase in pain or significant swelling."
+    ],
+    "category": "Knee - Expected symptoms",
+    "complexity": "Basic",
+    "body_region": "Knee"
+  },
+  {
+    "question": "What signs should I watch out for during my ACL rehab that mean something might be wrong?",
+    "ground_truths": [
+      "Contact your physiotherapist or GP immediately if you experience: excessive or worsening swelling that doesn't settle with rest and ice; wound discharge, redness, or signs of infection; severe pain during or after exercise that doesn't subside; a fever; intense calf pain and tightness (possible blood clot/DVT); shortness of breath; the knee giving way or feeling unstable; or if you are unable to straighten your knee.",
+      "Warning signs include: fever, intense calf pain or tightness (contact GP — possible blood clot), excessive swelling, wound discharge, severe uncontrolled pain, shortness of breath, or the knee giving way. Stop exercises that cause sudden increases in pain or severe swelling."
+    ],
+    "category": "Knee - Safety and red flags",
+    "complexity": "Intermediate",
+    "body_region": "Knee"
+  },
+  {
+    "question": "I've been told I have osteoarthritis in my hip. What exercises can I safely do at home?",
+    "ground_truths": [
+      "Recommended home exercises include: standing hip abduction (lifting your leg sideways while holding a support), standing hip extension (bringing your leg backwards with knee straight), bridging (lying on your back with knees bent, squeezing buttocks and lifting your bottom), hip pendulum swings, and single-leg balance (20–30 seconds). Choose 3–4 exercises per session, perform gently and slowly, ideally three times a day. Start with 2–3 repetitions and gradually increase. Warm up with a gentle 3–4 minute walk.",
+      "Exercise is a core treatment for hip osteoarthritis regardless of your age, pain severity, or disability level. Focus on cardiovascular exercises (walking, cycling, swimming), muscle strengthening exercises (squats, bridges, hip abduction), and balance activities. No exercise is off limits as long as it's tolerable — slight discomfort during exercise doesn't indicate damage or worsening."
+    ],
+    "category": "Hip - Exercise instructions",
+    "complexity": "Basic",
+    "body_region": "Hip"
+  },
+  {
+    "question": "I just had a total hip replacement. What movements do I need to avoid?",
+    "ground_truths": [
+      "If your surgeon recommends hip precautions, four movements must be avoided for at least 6 weeks (up to 12 weeks): (1) Do NOT cross your legs or ankles. (2) Do NOT bend your hip past 90 degrees — don't bend down to pick up objects from the floor. (3) Do NOT twist on your operated leg when turning. (4) Do NOT roll or lie on the un-operated side. Also avoid driving for at least 6 weeks, long-haul flights until 6 months, and high-impact activities until cleared.",
+      "Key precautions: no crossing legs, no bending hip past 90 degrees, no twisting on the operated leg, and no lying on the non-operated side. These typically apply for 6 weeks minimum. Continue prescribed exercises 3–4 times daily and gradually increase walking distance."
+    ],
+    "category": "Hip - Safety and contraindications",
+    "complexity": "Intermediate",
+    "body_region": "Hip"
+  },
+  {
+    "question": "I had my hip replaced two weeks ago. When can I drive, go back to work, and return to normal activities?",
+    "ground_truths": [
+      "According to NHS guidelines: Hospital stay is typically 1–3 days. Walk daily and follow prescribed exercises 3–4 times daily for 6 weeks. Avoid driving for at least 6 weeks — you must be able to perform an emergency stop without discomfort. Return to work typically around 6 weeks depending on your role. No travel abroad for 3 months; no long-haul flights until 6 months. Stitches/clips removed at about 10 days. Follow-up appointment at 6–12 weeks.",
+      "Key milestones: Walking with aids begins within 12–24 hours of surgery. No driving for 6 weeks. Return to work around 6 weeks (depends on role). Light household activities resume gradually, guided by pain. Avoid jumping, sudden turns, and heavy lifting during recovery."
+    ],
+    "category": "Hip - Expected outcomes",
+    "complexity": "Intermediate",
+    "body_region": "Hip"
+  },
+  {
+    "question": "I have pain on the outside of my hip, especially when I lie on it at night. My GP said it's greater trochanteric pain syndrome. What can I do?",
+    "ground_truths": [
+      "GTPS is usually a gluteal tendinopathy rather than simple bursitis. The key is slow progressive loading through gluteal strengthening exercises: the 'clam' exercise (lying on your side with knees bent, opening the top knee while keeping feet together), bridging, and progressing to side-lying hip abduction. Activity modification is critical: avoid sleeping on the painful side (lie on your back with pillow under knees, or good side with pillow between legs); avoid crossing your legs; avoid prolonged standing. Use ice (20 minutes, three times daily) and simple pain relief.",
+      "Avoid sleeping on the sore side, avoid crossing your legs, and reduce high-impact activities temporarily. Start gentle gluteal strengthening exercises like clams and bridges, and gradually increase the load over time. Most cases improve with conservative treatment."
+    ],
+    "category": "Hip - Exercise instructions and self-management",
+    "complexity": "Intermediate",
+    "body_region": "Hip"
+  },
+  {
+    "question": "I've got lateral hip pain / hip bursitis. What positions and movements should I avoid to stop it flaring up?",
+    "ground_truths": [
+      "Avoid positions that increase compressive forces on the gluteal tendons: (1) Avoid sleeping on the painful side — lie on your back with a pillow under knees, or good side with pillow between legs. (2) Avoid crossing your legs. (3) Avoid prolonged standing on one leg or hanging on one hip. (4) Avoid sitting with knees together and feet apart. (5) Temporarily reduce running and jumping. (6) Avoid stretching the outer hip by pulling your leg across your body. Focus on progressive gluteal strengthening rather than stretching.",
+      "Don't lie on the affected side at night; use a pillow between legs. Avoid crossing legs, standing with weight shifted to one hip, and prolonged sitting or standing. Avoid excessive stretching of the outer hip. Focus on gradual gluteal strengthening."
+    ],
+    "category": "Hip - Safety and contraindications",
+    "complexity": "Advanced",
+    "body_region": "Hip"
+  },
+  {
+    "question": "I've got lower back pain and I've been told I need to strengthen my core. What exercises are safe for me to start with?",
+    "ground_truths": [
+      "Safe beginner core exercises include: (1) Pelvic tilting — lie on your back with knees bent, exhale as you flatten your back against the floor, hold for a few seconds, repeat 5–10 times, 3 times per day. (2) Bridging — knees bent, feet flat, lift hips; start with 1 set of 15 reps, progress to 3 sets. (3) Lumbar knee rolling — lie on back, knees bent, gently roll knees side to side while tightening abdominals, 60 seconds, 4 times per day. (4) Four-point kneeling bird-dog — on all fours, extend opposite arm and leg. Progress exercises every day for at least 6 weeks to see benefits.",
+      "Low back pain is not caused by a weak core, and you don't need to brace your core constantly. However, exercises like squats, bridges, planks, and bird-dogs can be helpful components of a rehabilitation programme. Start gently, focus on movements that feel manageable. General physical activity like walking (even 5-minute walks, 3 times per day) is also highly recommended alongside targeted exercises."
+    ],
+    "category": "Low back - Exercise instructions",
+    "complexity": "Basic",
+    "body_region": "Low back"
+  },
+  {
+    "question": "My back really hurts. Should I rest in bed or try to stay active? I'm scared that moving will make it worse.",
+    "ground_truths": [
+      "According to NICE guidelines, you should continue with normal activities as much as possible. Prolonged bed rest is not recommended and can actually make things worse. Most episodes of low back pain resolve on their own. Approach it like an ankle sprain — take it easy for a couple of days as needed and slowly get back into your normal routine. A group exercise programme (biomechanical, aerobic, mind-body, or a combination) is recommended for flare-ups.",
+      "Keep moving. Staying active is one of the best things you can do for back pain. Bed rest makes it worse. Start gently — even short walks help. Temporarily modify activities that significantly aggravate your pain, but avoid complete rest. Gentle movements like cat-cow stretches and lumbar rotations can help during the acute phase."
+    ],
+    "category": "Low back - Safety and treatment approach",
+    "complexity": "Basic",
+    "body_region": "Low back"
+  },
+  {
+    "question": "I've had back pain for a few weeks now. When should I be worried that something serious is going on?",
+    "ground_truths": [
+      "Most low back pain does not have a serious underlying cause. Seek urgent medical attention for: loss of bladder or bowel control, numbness in the area around your genitals or buttocks (saddle anaesthesia), progressive weakness in your legs, or severe worsening pain that is unrelenting (especially night pain). Also see your doctor for unexplained weight loss, history of cancer, or fever. If pain is not improving after 6 weeks of following recommended exercises, contact your healthcare professional.",
+      "Seek immediate medical attention for: loss of bladder/bowel control, numbness in the groin/saddle area, or progressive leg weakness. See your GP if pain isn't improving after 6 weeks of exercise and self-management, or if it's getting progressively worse. Most low back pain has a good prognosis."
+    ],
+    "category": "Low back - Safety and red flags",
+    "complexity": "Advanced",
+    "body_region": "Low back"
+  },
+  {
+    "question": "What is the 'traffic light' system my physio keeps talking about for managing pain during exercise?",
+    "ground_truths": [
+      "The traffic light system divides the 0–10 pain scale into three zones: GREEN (0–3/10) means safe to continue — mild discomfort should settle quickly, and you can progress. AMBER (4–5/10) means proceed with caution — continue at the same level but don't increase load; if pain doesn't settle after exercise or you feel worse the next day, adjust. RED (7–10/10) means stop or regress — reduce weight, sets, reps, or range of motion.",
+      "The system works by monitoring three time points: DURING exercise, LATER that day, and the next MORNING. GREEN = no increase in symptoms the next morning, so you can do the same or more. AMBER = some increase but able to move normally within 1 hour and back to normal within 24 hours — proceed with caution and try again after 48 hours. RED = big increase that does not settle within 24 hours — rest 48 hours, then go easier."
+    ],
+    "category": "General - Pain monitoring",
+    "complexity": "Intermediate",
+    "body_region": "General"
+  },
+  {
+    "question": "How do I know when to make my rehab exercises harder?",
+    "ground_truths": [
+      "Progress when: (1) you have completed your prescribed repetitions and sets with ease or feel you could do more, (2) you are not having an increase in pain during exercise, and (3) you feel confident completing the exercise. Examples of progression include increasing repetitions, adding weight or resistance, or trying a new variation.",
+      "If you consistently score a 'green light' (0–3/10 pain) during and after exercises, and your symptoms are not worse the next morning, you are ready to progress. Do not progress until you have achieved a green light response. Hard sessions should be followed by two days of lower load to allow recovery.",
+      "Exercises are progressed when participants report decreased pain during the same exercise over time. Monitor: is pain tolerable during exercise, is pain better/worse/same after exercise, and is pain better/worse/same the following day. If all three answers are favorable, progress."
+    ],
+    "category": "General - Treatment progression",
+    "complexity": "Intermediate",
+    "body_region": "General"
+  },
+  {
+    "question": "When should I stop an exercise during my rehab session?",
+    "ground_truths": [
+      "Stop and seek advice if you experience: severe or new pain rated 7–10/10, inability to bear weight, significant swelling, or heat and redness around a joint. Also stop if you experience dizziness. New sudden pain, unusual swelling, or redness are warning signs. If you think you need immediate medical attention, call NHS 111.",
+      "Stop or regress when: pain is too high or worsening, the exercise is too difficult and you can't complete prescribed reps, or you feel unsafe. A sharp, stabbing, or intolerable pain that causes you to change how you're moving is a signal to stop. Try adjusting the exercise first — change speed, load, or set-up.",
+      "Stop or modify if you notice a flare-up afterward — significantly more pain, swelling, or joint soreness. Pain that does not return to baseline by the following morning indicates the current level may be too much."
+    ],
+    "category": "General - Safety",
+    "complexity": "Basic",
+    "body_region": "General"
+  },
+  {
+    "question": "What does a proper single leg squat look like, and what are the signs I'm doing it wrong?",
+    "ground_truths": [
+      "Stand on one leg with the other leg lifted so the hip is flexed to approximately 45° and the non-stance knee flexed to approximately 90°. Hold arms straight out with hands clasped. Squat to approximately 60° of knee flexion. Key signs of poor form: the knee caving inward (medial knee deviation), the pelvis dropping on the non-stance side (Trendelenburg sign), excessive trunk lean, or the low back arching excessively.",
+      "The main fault to watch for is your knee visibly tracking inward — medial knee deviation (MKD) — most visible at the bottom of the squat and the start of standing back up. This pattern is related to anterior knee pain and increased ACL injury risk. Keep the middle of your knee in line with your second toe. Also watch for pelvis dropping on the opposite side and trunk lean, which indicate hip stabilizer weakness."
+    ],
+    "category": "General - Exercise form and assessment",
+    "complexity": "Intermediate",
+    "body_region": "General"
+  },
+  {
+    "question": "How should I progress my single leg exercises if I can't do a full single leg squat yet?",
+    "ground_truths": [
+      "(1) Hand-assisted single leg squat using a TRX, rings, or sturdy support — hold lightly with two fingers to avoid over-relying on arm support; start above parallel depth. (2) Foot-assisted 'kickstand' single leg squat — keep all weight over the squatting foot but use the other foot lightly on a tennis ball for slight stability. (3) Unassisted single leg squat to a box at parallel — the minimum standard for return to full activity after a knee injury (goal: 10 reps on each side). (4) Elevated single leg squat — squat to an 18-inch box while standing on a 6-inch step, then add external load.",
+      "Master basic two-leg squat technique first. Then progress through: (1) TRX-supported single leg squat for learning the pattern. (2) Chair-supported single leg squat — practical for home exercise. (3) Bulgarian split squat — provides support while increasing load on the front leg. (4) Unassisted single leg squat. Supplementary exercises like clamshells, side-lying hip abduction, and band-resisted squats build the hip stabilizer strength needed for single leg work.",
+      "During the first 3 weeks, perform the single leg squat with the opposite foot touching the floor for balance. During weeks 3–6, progress to performing with the opposite leg flexed behind at 90°. Aim for 3 sets of 12 repetitions. Perform in front of a mirror to view and correct technique. Progress using RPE — if the exercise feels less than 'somewhat hard' (RPE <4), increase resistance."
+    ],
+    "category": "General - Exercise progression",
+    "complexity": "Intermediate",
+    "body_region": "General"
+  }
+]
