@@ -44,6 +44,50 @@ The goal is simple: help people recover **faster**, **safer**, and **more consis
 - **Frontend** → (Web / mobile app — webcam access)
 - **Backend** → Python-based inference pipeline
 
+## 📦 Environment Setup
+
+### Prerequisites
+- **Conda** (Miniconda or Anaconda) installed on your system
+- **Python 3.11** (specified in the environment file)
+
+### Installation Steps
+
+1. **Clone the repository** (if you haven't already):
+   ```bash
+   git clone https://github.com/DS5500-Team-11-AI-Powered-Rehab/AI-Powered-Rehabilitation-Coaching-System.git
+   cd AI-Powered-Rehabilitation-Coaching-System
+   ```
+
+2. **Create the Conda environment** from the provided environment file:
+   ```bash
+   conda env create -f rehab_ai_env.yml
+   ```
+
+3. **Activate the environment**:
+   ```bash
+   conda activate rehab_ai_env
+   ```
+
+### What's Included
+
+The environment includes:
+- **Core scientific stack**: NumPy, Pandas, Matplotlib, Seaborn, scikit-learn
+- **Computer Vision**: OpenCV, MediaPipe
+- **Deep Learning**: PyTorch (CPU-only), TorchVision, TorchAudio
+- **RAG / Vector Database**: ChromaDB, Sentence Transformers
+- **LLM Frameworks**: LangChain, LangGraph
+- **LLM Clients**: OpenAI, Anthropic, Ollama
+- **Data Processing**: PyPDF, python-docx, BeautifulSoup4
+- **Jupyter**: Notebook environment for development and experimentation
+- **Additional tools**: Transformers, Accelerate, Spacy, and more
+
+### Deactivating the Environment
+
+When you're done, deactivate the environment:
+```bash
+conda deactivate
+```
+
 ## Why This Matters
 
 Incorrect exercise performance and low adherence are well-documented causes of prolonged recovery times and increased healthcare costs. By combining state-of-the-art **pose estimation**, **generative AI**, and **personalized retrieval**, VPA aims to bring high-quality, 24/7 physiotherapy guidance to anyone with a smartphone or laptop.
