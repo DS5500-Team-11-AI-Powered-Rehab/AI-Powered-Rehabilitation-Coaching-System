@@ -1,0 +1,19 @@
+name: qevd_pose
+channels:
+  - conda-forge
+  - pytorch
+dependencies:
+  - python=3.11
+  - pip
+  - numpy
+  - opencv
+  - matplotlib
+  - tqdm
+  - pandas
+  - scikit-learn
+  - pytorch
+  - torchvision
+  - torchaudio
+  - cpuonly
+  - pip:
+      - mediapipe==0.10.14
