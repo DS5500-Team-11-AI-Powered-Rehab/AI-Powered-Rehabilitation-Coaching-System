@@ -3,6 +3,7 @@ LangGraph workflow for coaching orchestration
 Handles: Tier routing → LLM processing → Response delivery
 """
 
+import anthropic
 from langgraph.graph import StateGraph, END
 from state import CoachingState
 import time
@@ -98,37 +99,102 @@ def tier_2_rag_node(state: CoachingState) -> CoachingState:
     
     start_time = time.time()
     
-    # TODO: Implement RAG retrieval
-    # Hint: Use ChromaDB or similar vector store
-    # Example:
-    # vectorstore = Chroma(collection_name="pt_guidelines")
-    # docs = vectorstore.similarity_search(query, k=2)
-    
     coaching_event = state["coaching_event"]
     mistake_type = coaching_event["mistake"]["type"]
     exercise = coaching_event["exercise"]["name"]
     
-    # Mock RAG retrieval
+    # Build RAG query
     query = f"How to correct {mistake_type} during {exercise}"
     print(f"[Tier 2] RAG Query: {query}")
     
-    # TODO: Replace with actual RAG
-    mock_docs = [
-        f"Physical therapy guidelines for {mistake_type}: Ensure proper alignment and form...",
-        f"Common corrections for {exercise}: Focus on controlled movement..."
-    ]
-    state["retrieved_docs"] = mock_docs
+    # RAG Retrieval using ChromaDB
+    retrieved_docs = []
+    try:
+        import chromadb
+        from chromadb.utils import embedding_functions
+        
+        # Initialize ChromaDB client
+        chroma_client = chromadb.PersistentClient(path="./chroma_db")
+        
+        # Use sentence-transformers for embeddings
+        embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
+            model_name="all-MiniLM-L6-v2"
+        )
+        
+        # Get or create collection
+        collection = chroma_client.get_or_create_collection(
+            name="pt_guidelines",
+            embedding_function=embedding_fn
+        )
+        
+        # Query for top 2 most relevant documents
+        results = collection.query(
+            query_texts=[query],
+            n_results=2
+        )
+        
+        # Extract document texts
+        if results and results['documents'] and len(results['documents']) > 0:
+            retrieved_docs = results['documents'][0]
+            print(f"[Tier 2] Retrieved {len(retrieved_docs)} documents from RAG")
+        else:
+            print(f"[Tier 2] No documents found in ChromaDB, using fallback")
+            retrieved_docs = [
+                f"Physical therapy guidelines for {mistake_type}: Ensure proper alignment and form...",
+                f"Common corrections for {exercise}: Focus on controlled movement..."
+            ]
+            
+    except Exception as e:
+        print(f"[Tier 2] RAG retrieval failed: {e}. Using fallback.")
+        retrieved_docs = [
+            f"Physical therapy guidelines for {mistake_type}: Ensure proper alignment and form...",
+            f"Common corrections for {exercise}: Focus on controlled movement..."
+        ]
     
-    # TODO: Implement LLM generation
-    # Hint: Use langchain_anthropic.ChatAnthropic
-    # Example:
-    # from langchain_anthropic import ChatAnthropic
-    # llm = ChatAnthropic(model="claude-sonnet-4-20250514", max_tokens=100)
-    # prompt = f"Generate brief coaching cue for: {mistake_type}"
-    # response = llm.invoke(prompt)
+    state["retrieved_docs"] = retrieved_docs
     
-    # Mock LLM response
-    state["coaching_response"] = f"Focus on correcting {mistake_type} - maintain proper form throughout the movement."
+    # LLM Generation with Claude
+    try:
+        from langchain_anthropic import ChatAnthropic
+        from langchain_core.prompts import ChatPromptTemplate
+        
+        # Initialize Claude Sonnet 4
+        llm = ChatAnthropic(
+            model="claude-sonnet-4-20250514",
+            max_tokens=100,
+            temperature=0.3
+        )
+        
+        # Create focused prompt for brief coaching cue
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", "You are a physical therapy coach. Generate a brief, actionable coaching cue (15-20 words max) based on the guidelines provided. Be concise and direct."),
+            ("user", """Context from PT guidelines:
+{context}
+
+Mistake detected: {mistake_type}
+Exercise: {exercise}
+
+Generate a brief coaching cue to correct this mistake:""")
+        ])
+        
+        # Prepare context from retrieved docs
+        context = "\n\n".join(retrieved_docs)
+        
+        # Generate response
+        chain = prompt | llm
+        response = chain.invoke({
+            "context": context,
+            "mistake_type": mistake_type,
+            "exercise": exercise
+        })
+        
+        state["coaching_response"] = response.content.strip()
+        print(f"[Tier 2] LLM generated coaching cue")
+        
+    except Exception as e:
+        print(f"[Tier 2] LLM generation failed: {e}. Using fallback.")
+        state["coaching_response"] = f"Focus on correcting {mistake_type} - maintain proper form throughout the movement."
+    
     state["delivery_timing"] = "rep_end"
     state["tier_used"] = "tier_2"
     
@@ -153,24 +219,220 @@ def tier_3_reasoning_node(state: CoachingState) -> CoachingState:
     
     start_time = time.time()
     
-    # TODO: Implement full reasoning workflow
-    # Hint: Use LangChain agent with tools
-    # Example tools:
-    # - analyze_compensation_pattern()
-    # - check_patient_limitations()
-    # - recommend_modification()
-    
     coaching_event = state["coaching_event"]
+    mistake_type = coaching_event["mistake"]["type"]
+    exercise = coaching_event["exercise"]["name"]
+    severity = coaching_event.get("severity", "medium")
+    coaching_history = state.get("coaching_history", [])
+    patient_profile = state.get("patient_profile", {})
     
     print(f"[Tier 3] Starting complex reasoning...")
     
-    # Mock complex reasoning
-    state["movement_analysis"] = "Detected potential compensation pattern due to fatigue"
-    state["coaching_response"] = (
-        "I notice this mistake is persisting. This often happens when certain muscles "
-        "fatigue faster than others. Let's modify the exercise slightly to maintain "
-        "good form while building the strength you need."
-    )
+    # === STEP 1: RAG Retrieval (3-5 documents) ===
+    query = f"Detailed analysis and correction strategies for {mistake_type} during {exercise}"
+    print(f"[Tier 3] RAG Query: {query}")
+    
+    retrieved_docs = []
+    try:
+        import chromadb
+        from chromadb.utils import embedding_functions
+        
+        # Initialize ChromaDB client
+        chroma_client = chromadb.PersistentClient(path="./chroma_db")
+        
+        # Use sentence-transformers for embeddings
+        embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
+            model_name="all-MiniLM-L6-v2"
+        )
+        
+        # Get or create collection
+        collection = chroma_client.get_or_create_collection(
+            name="pt_guidelines",
+            embedding_function=embedding_fn
+        )
+        
+        # Query for top 5 most relevant documents
+        results = collection.query(
+            query_texts=[query],
+            n_results=5
+        )
+        
+        # Extract document texts
+        if results and results['documents'] and len(results['documents']) > 0:
+            retrieved_docs = results['documents'][0]
+            print(f"[Tier 3] Retrieved {len(retrieved_docs)} documents from RAG")
+        else:
+            print(f"[Tier 3] No documents found in ChromaDB, using fallback")
+            retrieved_docs = [
+                f"Physical therapy guidelines for {mistake_type}: Detailed biomechanical analysis...",
+                f"Compensation patterns in {exercise}: Common causes and corrections...",
+                f"Progressive modification strategies for movement quality...",
+                f"Patient-centered coaching approaches for persistent mistakes...",
+                f"Evidence-based cues for {exercise} technique..."
+            ]
+            
+    except Exception as e:
+        print(f"[Tier 3] RAG retrieval failed: {e}. Using fallback.")
+        retrieved_docs = [
+            f"Physical therapy guidelines for {mistake_type}: Detailed biomechanical analysis...",
+            f"Compensation patterns in {exercise}: Common causes and corrections...",
+            f"Progressive modification strategies for movement quality...",
+            f"Patient-centered coaching approaches for persistent mistakes...",
+            f"Evidence-based cues for {exercise} technique..."
+        ]
+    
+    state["retrieved_docs"] = retrieved_docs
+    
+    # === STEP 2: Define Analysis Tools ===
+    from langchain.tools import tool
+    
+    @tool
+    def analyze_compensation_pattern(mistake_history: str) -> str:
+        """Analyze if mistake indicates a compensation pattern based on patient history."""
+        # Check if mistake is recurring
+        if coaching_history and len(coaching_history) > 2:
+            recent_mistakes = [h.get("mistake", {}).get("type") for h in coaching_history[-3:]]
+            if recent_mistakes.count(mistake_type) >= 2:
+                return f"PATTERN DETECTED: {mistake_type} has occurred {recent_mistakes.count(mistake_type)} times in last 3 events. Likely compensation due to fatigue or weakness."
+        return f"No clear compensation pattern detected yet for {mistake_type}."
+    
+    @tool
+    def check_patient_limitations(limitation_query: str) -> str:
+        """Check patient profile for known limitations or past injuries."""
+        limitations = patient_profile.get("known_limitations", [])
+        injuries = patient_profile.get("past_injuries", [])
+        
+        result = []
+        if limitations:
+            result.append(f"Known limitations: {', '.join(limitations)}")
+        if injuries:
+            result.append(f"Past injuries: {', '.join(injuries)}")
+        
+        if result:
+            return " | ".join(result)
+        return "No documented limitations or past injuries in patient profile."
+    
+    @tool
+    def recommend_modification(exercise_name: str) -> str:
+        """Recommend exercise modification to maintain quality while building strength."""
+        modifications = {
+            "squat": "Reduce depth to parallel, add tempo control (3-1-3), or use box squat for feedback",
+            "lunge": "Shorten stride length, add support rail, or perform static split squat",
+            "push-up": "Elevate hands on bench, reduce range of motion, or perform on knees",
+            "deadlift": "Reduce weight, use trap bar, or perform Romanian deadlift with lighter load",
+            "plank": "Reduce hold time, perform on knees, or do incline plank"
+        }
+        
+        exercise_lower = exercise_name.lower()
+        for key in modifications:
+            if key in exercise_lower:
+                return f"Modification for {exercise_name}: {modifications[key]}"
+        
+        return f"General modification: Reduce load/intensity, slow tempo, or simplify range of motion"
+    
+    tools = [analyze_compensation_pattern, check_patient_limitations, recommend_modification]
+    
+    # === STEP 3: Agent with Chain-of-Thought Reasoning ===
+    try:
+        from langchain_anthropic import ChatAnthropic
+        from langchain.agents import create_tool_calling_agent, AgentExecutor
+        from langchain_core.prompts import ChatPromptTemplate
+        
+        # Initialize Claude Sonnet 4 with tool use
+        llm = ChatAnthropic(
+            model="claude-sonnet-4-20250514",
+            max_tokens=500,
+            temperature=0.4
+        )
+        
+        # Create agent prompt
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", """You are an expert physical therapy movement analysis agent. 
+Your role is to perform chain-of-thought reasoning to understand WHY a patient is making a mistake and provide detailed, actionable coaching.
+
+Available context:
+- Patient profile with limitations and history
+- Physical therapy guidelines from knowledge base
+- Exercise-specific biomechanics
+
+Use the available tools to:
+1. Analyze if this is a compensation pattern
+2. Check for patient-specific limitations
+3. Recommend appropriate modifications if needed
+
+Then synthesize a detailed coaching response (30-50 words) that:
+- Explains the root cause of the mistake
+- Provides specific correction cues
+- Offers encouragement and context
+- Suggests modifications if appropriate"""),
+            ("user", """Physical Therapy Guidelines:
+{context}
+
+Current Situation:
+- Exercise: {exercise}
+- Mistake: {mistake_type}
+- Severity: {severity}
+- Patient: {patient_name}, Age {patient_age}
+
+Recent coaching history: {history_summary}
+
+Perform your analysis and generate a detailed coaching response."""),
+            ("placeholder", "{agent_scratchpad}")
+        ])
+        
+        # Create agent
+        agent = create_tool_calling_agent(llm, tools, prompt)
+        agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=False, max_iterations=3)
+        
+        # Prepare context
+        context = "\n\n".join(retrieved_docs[:5])
+        history_summary = f"{len(coaching_history)} events in session" if coaching_history else "First event in session"
+        
+        # Run agent
+        result = agent_executor.invoke({
+            "context": context,
+            "exercise": exercise,
+            "mistake_type": mistake_type,
+            "severity": severity,
+            "patient_name": patient_profile.get("name", "Patient"),
+            "patient_age": patient_profile.get("age", "unknown"),
+            "history_summary": history_summary
+        })
+        
+        # Extract response
+        agent_output = result.get("output", "")
+        state["movement_analysis"] = f"Agent reasoning completed with {len(tools)} tools"
+        state["coaching_response"] = agent_output
+        
+        print(f"[Tier 3] Agent reasoning complete - generated detailed coaching")
+        
+    except Exception as e:
+        print(f"[Tier 3] Agent execution failed: {e}. Using fallback reasoning.")
+        
+        # Fallback: Manual reasoning without agent
+        context = "\n".join(retrieved_docs[:3])
+        
+        # Simple pattern detection
+        is_recurring = False
+        if coaching_history and len(coaching_history) > 2:
+            recent_mistakes = [h.get("mistake", {}).get("type") for h in coaching_history[-3:]]
+            is_recurring = recent_mistakes.count(mistake_type) >= 2
+        
+        if is_recurring:
+            state["movement_analysis"] = "Detected recurring mistake pattern - likely fatigue or compensation"
+            state["coaching_response"] = (
+                f"I notice {mistake_type} is persisting. This often happens when certain muscles "
+                f"fatigue before others. Let's modify the {exercise} slightly - try reducing the "
+                f"range of motion or slowing the tempo to maintain quality form while building the strength you need."
+            )
+        else:
+            state["movement_analysis"] = "Single occurrence of mistake - providing detailed correction"
+            state["coaching_response"] = (
+                f"Let's focus on correcting your {mistake_type} in the {exercise}. The key is to "
+                f"maintain alignment throughout the movement. Focus on controlled tempo and proper "
+                f"positioning. This will help prevent compensation patterns as you progress."
+            )
+    
     state["delivery_timing"] = "rest_period"
     state["tier_used"] = "tier_3"
     
@@ -192,19 +454,83 @@ def coaching_agent_node(state: CoachingState) -> CoachingState:
     - Prepares for audio delivery
     """
     
-    # TODO: Implement response polishing
-    # Hint: Use LLM to refine the coaching_response
-    # Make it conversational, encouraging, and natural
-    
     raw_response = state["coaching_response"]
-    patient_name = state["patient_profile"].get("name", "")
+    patient_profile = state.get("patient_profile", {})
+    patient_name = patient_profile.get("name", "")
+    coaching_style = patient_profile.get("preferences", {}).get("coaching_style", "encouraging")
+    tier_used = state.get("tier_used", "tier_2")
     
-    # Mock polishing (in production, use LLM)
-    polished = raw_response  # For now, pass through
+    # Skip polishing for Tier 1 (cached responses are already polished)
+    if tier_used == "tier_1":
+        state["feedback_audio"] = raw_response
+        print(f"[Coaching Agent] Tier 1 response - skipping polish")
+        return state
     
-    state["feedback_audio"] = polished
-    
-    print(f"[Coaching Agent] Polished response ready")
+    # Polish response with LLM
+    try:
+        from langchain import ChatAnthropic, ChatPromptTemplate
+        
+        # Initialize Claude for response polishing
+        llm = ChatAnthropic(
+            model="claude-sonnet-4-20250514",
+            max_tokens=150,
+            temperature=0.5  # Slightly higher for more natural variation
+        )
+        
+        # Define coaching styles
+        style_instructions = {
+            "encouraging": "Be warm, supportive, and motivating. Use positive reinforcement.",
+            "direct": "Be clear, concise, and straightforward. Focus on actionable instructions.",
+            "detailed": "Provide thorough explanations with context. Be educational and informative.",
+            "friendly": "Be casual, conversational, and personable. Use a warm, approachable tone."
+        }
+        
+        style_instruction = style_instructions.get(coaching_style, style_instructions["encouraging"])
+        
+        # Create polishing prompt
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", f"""You are a physical therapy coaching assistant that makes feedback natural and encouraging for audio delivery.
+
+Your task: Refine the coaching feedback to be conversational, natural-sounding when spoken aloud, and appropriate for the patient's preferences.
+
+Coaching style preference: {coaching_style}
+Style guidance: {style_instruction}
+
+Guidelines:
+- Keep the core technical content and corrections
+- Make it sound natural when spoken aloud (avoid robotic phrasing)
+- Use contractions and conversational language
+- Be encouraging and supportive
+- Keep it concise (don't make it significantly longer)
+- Remove any awkward phrasing or overly formal language
+- Address the patient directly using "you" and "your"
+{"- Use the patient's name naturally: " + patient_name if patient_name and patient_name != "Test Patient" else ""}
+
+Output ONLY the polished coaching message, nothing else."""),
+            ("user", "Raw coaching feedback to polish:\n\n{raw_response}")
+        ])
+        
+        # Generate polished response
+        chain = prompt | llm
+        result = chain.invoke({"raw_response": raw_response})
+        
+        polished = result.content.strip()
+        
+        # Validation: Ensure polished response isn't empty or too different
+        if not polished or len(polished) < 10:
+            print(f"[Coaching Agent] Polish result too short, using original")
+            polished = raw_response
+        elif len(polished) > len(raw_response) * 2:
+            print(f"[Coaching Agent] Polish result too long, using original")
+            polished = raw_response
+        else:
+            print(f"[Coaching Agent] Response polished successfully ({coaching_style} style)")
+        
+        state["feedback_audio"] = polished
+        
+    except Exception as e:
+        print(f"[Coaching Agent] Polishing failed: {e}. Using original response.")
+        state["feedback_audio"] = raw_response
     
     return state
 

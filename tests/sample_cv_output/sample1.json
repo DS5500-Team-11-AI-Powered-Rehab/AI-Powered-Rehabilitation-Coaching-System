@@ -1,0 +1,1561 @@
+[
+  {
+    "timestamp_s": 5.146026625006925,
+    "frame_index": 64,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "quadruped thoracic spine rotation (left)",
+      "p": 0.47909486293792725
+    },
+    "mistakes": [
+      {
+        "name": "not moving - up",
+        "p": 0.5167215466499329
+      },
+      {
+        "name": "as fast as possible",
+        "p": 0.3867134749889374
+      }
+    ],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 2,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.10874872654676437
+    },
+    "quality_score": 0.3293247058987617,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 5.699577707971912,
+    "frame_index": 72,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "quadruped thoracic spine rotation (left)",
+      "p": 0.539875864982605
+    },
+    "mistakes": [
+      {
+        "name": "not moving - up",
+        "p": 0.5041511058807373
+      },
+      {
+        "name": "as fast as possible",
+        "p": 0.4086383283138275
+      }
+    ],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 2,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.10532867908477783
+    },
+    "quality_score": 0.3262292504310608,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 6.10983174998546,
+    "frame_index": 80,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "quadruped thoracic spine rotation (left)",
+      "p": 0.4888656437397003
+    },
+    "mistakes": [
+      {
+        "name": "not moving - up",
+        "p": 0.431115984916687
+      },
+      {
+        "name": "as fast as possible",
+        "p": 0.4227302670478821
+      }
+    ],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 2,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.09160463511943817
+    },
+    "quality_score": 0.31977279484272003,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 6.394640915968921,
+    "frame_index": 88,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "quadruped thoracic spine rotation (left)",
+      "p": 0.47855955362319946
+    },
+    "mistakes": [
+      {
+        "name": "as fast as possible",
+        "p": 0.39261361956596375
+      }
+    ],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 2,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.09272465109825134
+    },
+    "quality_score": 0.33254280686378485,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 6.71426270797383,
+    "frame_index": 96,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "quadruped thoracic spine rotation (left)",
+      "p": 0.38807347416877747
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 2,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.09532509744167328
+    },
+    "quality_score": 0.3542944103479385,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 7.267288832983468,
+    "frame_index": 104,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.30871206521987915
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 2,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.09404098987579346
+    },
+    "quality_score": 0.36705886125564574,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 7.802769750007428,
+    "frame_index": 112,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.4152498245239258
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 2,
+      "torso_rotation": 1,
+      "direction": "none",
+      "no_obvious_issue_p": 0.09279293566942215
+    },
+    "quality_score": 0.3744800612330437,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 8.33427616598783,
+    "frame_index": 120,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.539505660533905
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 1,
+      "direction": "none",
+      "no_obvious_issue_p": 0.0986924022436142
+    },
+    "quality_score": 0.38020561039447787,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 8.868874415988103,
+    "frame_index": 128,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.6466403007507324
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 4,
+      "height_level": 5,
+      "torso_rotation": 1,
+      "direction": "none",
+      "no_obvious_issue_p": 0.09868874400854111
+    },
+    "quality_score": 0.38016579300165176,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 9.404400790983345,
+    "frame_index": 136,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.6593888401985168
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 4,
+      "height_level": 5,
+      "torso_rotation": 1,
+      "direction": "none",
+      "no_obvious_issue_p": 0.058155108243227005
+    },
+    "quality_score": 0.3585028938949108,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 9.935352540982421,
+    "frame_index": 144,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.757141649723053
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 4,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.019544070586562157
+    },
+    "quality_score": 0.3587331805378199,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 10.469160165986978,
+    "frame_index": 152,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.913092851638794
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 4,
+      "height_level": 5,
+      "torso_rotation": 1,
+      "direction": "none",
+      "no_obvious_issue_p": 0.010607321746647358
+    },
+    "quality_score": 0.3535079596564174,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 10.999940707988571,
+    "frame_index": 160,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.9573964476585388
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 4,
+      "height_level": 5,
+      "torso_rotation": 1,
+      "direction": "none",
+      "no_obvious_issue_p": 0.0044668251648545265
+    },
+    "quality_score": 0.3588268896564841,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 11.533625707961619,
+    "frame_index": 168,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.9584189653396606
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 4,
+      "height_level": 2,
+      "torso_rotation": 1,
+      "direction": "none",
+      "no_obvious_issue_p": 0.003496450139209628
+    },
+    "quality_score": 0.3642201435286552,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 12.070276374986861,
+    "frame_index": 176,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.9535608291625977
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 4,
+      "height_level": 2,
+      "torso_rotation": 1,
+      "direction": "none",
+      "no_obvious_issue_p": 0.003321873489767313
+    },
+    "quality_score": 0.37366409143432977,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 12.6026842079591,
+    "frame_index": 184,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.7337334752082825
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 4,
+      "height_level": 5,
+      "torso_rotation": 1,
+      "direction": "none",
+      "no_obvious_issue_p": 0.004464845173060894
+    },
+    "quality_score": 0.38752441424876455,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 13.131678207952064,
+    "frame_index": 192,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "cat-cow pose",
+      "p": 0.2532205879688263
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 4,
+      "height_level": 5,
+      "torso_rotation": 1,
+      "direction": "none",
+      "no_obvious_issue_p": 0.006577761378139257
+    },
+    "quality_score": 0.39217704767361283,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 13.665070957969874,
+    "frame_index": 200,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "jumping jacks",
+      "p": 0.20754742622375488
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 4,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.011365152895450592
+    },
+    "quality_score": 0.3944923885166645,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 14.199873040954117,
+    "frame_index": 208,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "jumping jacks",
+      "p": 0.4545949101448059
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 4,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.02327623777091503
+    },
+    "quality_score": 0.39760072715580463,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 14.734285499958787,
+    "frame_index": 216,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "jumping jacks",
+      "p": 0.5352346301078796
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 4,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.036756135523319244
+    },
+    "quality_score": 0.4007084310054779,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 15.26871316600591,
+    "frame_index": 224,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "jumping jacks",
+      "p": 0.46064382791519165
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 2,
+      "height_level": 3,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.034642040729522705
+    },
+    "quality_score": 0.3906973630189896,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 15.802870749961585,
+    "frame_index": 232,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "jumping jacks",
+      "p": 0.39643174409866333
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 2,
+      "height_level": 3,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.017161443829536438
+    },
+    "quality_score": 0.36440566778182987,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 16.334377540973946,
+    "frame_index": 240,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "jumping jacks",
+      "p": 0.7075732946395874
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 2,
+      "height_level": 3,
+      "torso_rotation": 1,
+      "direction": "none",
+      "no_obvious_issue_p": 0.017509179189801216
+    },
+    "quality_score": 0.3813275318592787,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 16.86841887497576,
+    "frame_index": 248,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "jumping jacks",
+      "p": 0.49114617705345154
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 2,
+      "height_level": 3,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.04600685462355614
+    },
+    "quality_score": 0.4017009772360325,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 17.402480165997986,
+    "frame_index": 256,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "jumping jacks",
+      "p": 0.9245327115058899
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 4,
+      "height_level": 5,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.043766677379608154
+    },
+    "quality_score": 0.40909820348024367,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 17.934188374958467,
+    "frame_index": 264,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "jumping jacks",
+      "p": 0.9703885316848755
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 2,
+      "height_level": 5,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.02394731342792511
+    },
+    "quality_score": 0.40033480525016785,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 18.470453374960925,
+    "frame_index": 272,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "jumping jacks",
+      "p": 0.9829949736595154
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.019216595217585564
+    },
+    "quality_score": 0.39743230678141117,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 19.003990290977526,
+    "frame_index": 280,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "jumping jacks",
+      "p": 0.7178807854652405
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.01966305822134018
+    },
+    "quality_score": 0.40003383159637457,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 19.538252124970313,
+    "frame_index": 288,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.9513488411903381
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 3.5,
+      "rom_level": 3,
+      "height_level": 2,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.0038924238178879023
+    },
+    "quality_score": 0.3780858380254358,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 20.070517290965654,
+    "frame_index": 296,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.8739095330238342
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 3.5,
+      "rom_level": 3,
+      "height_level": 2,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.003205407178029418
+    },
+    "quality_score": 0.3746552339289338,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 20.600760540983174,
+    "frame_index": 304,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.6896688938140869
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 3.5,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 1,
+      "direction": "none",
+      "no_obvious_issue_p": 0.0026781554333865643
+    },
+    "quality_score": 0.37467325599864126,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 21.135440749989357,
+    "frame_index": 312,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.6967813372612
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 3.5,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 1,
+      "direction": "none",
+      "no_obvious_issue_p": 0.002504356438294053
+    },
+    "quality_score": 0.37924025519751015,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 21.667957499972545,
+    "frame_index": 320,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.8062747120857239
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 3.5,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 1,
+      "direction": "none",
+      "no_obvious_issue_p": 0.0035540673416107893
+    },
+    "quality_score": 0.36986512620933354,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 22.20147566596279,
+    "frame_index": 328,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.6277986168861389
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 1,
+      "direction": "none",
+      "no_obvious_issue_p": 0.006623265333473682
+    },
+    "quality_score": 0.34106832575052975,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 22.73477316595381,
+    "frame_index": 336,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.41924160718917847
+    },
+    "mistakes": [
+      {
+        "name": "hands on knees",
+        "p": 0.4355594217777252
+      }
+    ],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.013319926336407661
+    },
+    "quality_score": 0.32614699415862564,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 23.265605958004016,
+    "frame_index": 344,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.3460991680622101
+    },
+    "mistakes": [
+      {
+        "name": "hands on knees",
+        "p": 0.45573750138282776
+      },
+      {
+        "name": "left leg",
+        "p": 0.41529321670532227
+      }
+    ],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.021816860884428024
+    },
+    "quality_score": 0.3177869148552418,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 23.80129312496865,
+    "frame_index": 352,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.2142452895641327
+    },
+    "mistakes": [
+      {
+        "name": "left leg",
+        "p": 0.45708197355270386
+      },
+      {
+        "name": "hands on knees",
+        "p": 0.44041410088539124
+      }
+    ],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.03627193346619606
+    },
+    "quality_score": 0.31749836429953576,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 24.33648549998179,
+    "frame_index": 360,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "waving (quick)",
+      "p": 0.24684812128543854
+    },
+    "mistakes": [
+      {
+        "name": "left leg",
+        "p": 0.515022873878479
+      },
+      {
+        "name": "hands on knees",
+        "p": 0.4226328730583191
+      }
+    ],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.0502554327249527
+    },
+    "quality_score": 0.30800234973430635,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 24.865747415984515,
+    "frame_index": 368,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "thumb down (hold)",
+      "p": 0.28111886978149414
+    },
+    "mistakes": [
+      {
+        "name": "left leg",
+        "p": 0.49780768156051636
+      },
+      {
+        "name": "hands on knees",
+        "p": 0.38025906682014465
+      }
+    ],
+    "metrics": {
+      "speed_rps": 2.5,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.04867102578282356
+    },
+    "quality_score": 0.30291372463107114,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 25.40174649999244,
+    "frame_index": 376,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "waving (quick)",
+      "p": 0.20444661378860474
+    },
+    "mistakes": [
+      {
+        "name": "left leg",
+        "p": 0.49131089448928833
+      },
+      {
+        "name": "hands on knees",
+        "p": 0.42817291617393494
+      }
+    ],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.04058092087507248
+    },
+    "quality_score": 0.3035313919186592,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 25.93480454100063,
+    "frame_index": 384,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.2725444734096527
+    },
+    "mistakes": [
+      {
+        "name": "left leg",
+        "p": 0.45964762568473816
+      },
+      {
+        "name": "hands on knees",
+        "p": 0.45469382405281067
+      }
+    ],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.03598673641681671
+    },
+    "quality_score": 0.31314155757427214,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 26.468487499980256,
+    "frame_index": 392,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.5589172840118408
+    },
+    "mistakes": [
+      {
+        "name": "hands on knees",
+        "p": 0.46035438776016235
+      },
+      {
+        "name": "left leg",
+        "p": 0.4018968939781189
+      }
+    ],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.0302156712859869
+    },
+    "quality_score": 0.32253496088087563,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 27.00248099997407,
+    "frame_index": 400,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.6685064435005188
+    },
+    "mistakes": [
+      {
+        "name": "hands on knees",
+        "p": 0.4180421233177185
+      },
+      {
+        "name": "left leg",
+        "p": 0.35638952255249023
+      }
+    ],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.0293393786996603
+    },
+    "quality_score": 0.3324442122131586,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 27.47672091599088,
+    "frame_index": 408,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.5173054933547974
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.024809202179312706
+    },
+    "quality_score": 0.345644760504365,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 27.77651583298575,
+    "frame_index": 416,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.6365063190460205
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.01867544651031494
+    },
+    "quality_score": 0.3638297408819199,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 28.16092666599434,
+    "frame_index": 424,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.6331408023834229
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 1,
+      "direction": "none",
+      "no_obvious_issue_p": 0.012178926728665829
+    },
+    "quality_score": 0.3758366042748094,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 28.426441707997583,
+    "frame_index": 432,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "heel lift",
+      "p": 0.36886802315711975
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 4,
+      "height_level": 5,
+      "torso_rotation": 1,
+      "direction": "none",
+      "no_obvious_issue_p": 0.007318488322198391
+    },
+    "quality_score": 0.3817295262590051,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 28.75988695799606,
+    "frame_index": 440,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "bunny hops",
+      "p": 0.27491453289985657
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 4,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.01031358540058136
+    },
+    "quality_score": 0.38267338871955875,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 29.1952774579986,
+    "frame_index": 448,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "bunny hops",
+      "p": 0.3824988007545471
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.0,
+      "rom_level": 4,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.020834097638726234
+    },
+    "quality_score": 0.3859631773084402,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 29.626994416001253,
+    "frame_index": 456,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "bunny hops",
+      "p": 0.3497125804424286
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 0.8,
+      "rom_level": 4,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.05032302811741829
+    },
+    "quality_score": 0.3969996772706509,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 30.185995165957138,
+    "frame_index": 464,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "raised leg circles (clockwise)",
+      "p": 0.14757631719112396
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 2.0,
+      "rom_level": 3,
+      "height_level": 5,
+      "torso_rotation": 1,
+      "direction": "none",
+      "no_obvious_issue_p": 0.09936972707509995
+    },
+    "quality_score": 0.4108739629387856,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 30.603392707998864,
+    "frame_index": 472,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "raised leg circles (clockwise)",
+      "p": 0.11096664518117905
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 0.8,
+      "rom_level": 3,
+      "height_level": 3,
+      "torso_rotation": 1,
+      "direction": "none",
+      "no_obvious_issue_p": 0.04424015432596207
+    },
+    "quality_score": 0.3744727894663811,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 31.069057332992088,
+    "frame_index": 480,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "raised leg circles (clockwise)",
+      "p": 0.08892501890659332
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 0.8,
+      "rom_level": 3,
+      "height_level": 3,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.048399604856967926
+    },
+    "quality_score": 0.3877721056342125,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 31.601983165950514,
+    "frame_index": 488,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "wide-legged forward fold",
+      "p": 0.09868592023849487
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 0.8,
+      "rom_level": 4,
+      "height_level": 3,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.04455353692173958
+    },
+    "quality_score": 0.39488063976168636,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 32.11247029097285,
+    "frame_index": 496,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "wide-legged forward fold",
+      "p": 0.1698881983757019
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 2.0,
+      "rom_level": 4,
+      "height_level": 3,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.04770480841398239
+    },
+    "quality_score": 0.40168734043836596,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 32.63820779096568,
+    "frame_index": 504,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "wide-legged forward fold",
+      "p": 0.22553886473178864
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.2,
+      "rom_level": 4,
+      "height_level": 3,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.03927028924226761
+    },
+    "quality_score": 0.4054902032017708,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 33.13653074996546,
+    "frame_index": 512,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "wide-legged forward fold",
+      "p": 0.2925146520137787
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.2,
+      "rom_level": 4,
+      "height_level": 3,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.03235619142651558
+    },
+    "quality_score": 0.403540762513876,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 33.63829262496438,
+    "frame_index": 520,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "wide-legged forward fold",
+      "p": 0.4024055004119873
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 1.2,
+      "rom_level": 4,
+      "height_level": 3,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.030181657522916794
+    },
+    "quality_score": 0.4040755800902844,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 34.00298670795746,
+    "frame_index": 528,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "wide-legged forward fold",
+      "p": 0.40622052550315857
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 2.0,
+      "rom_level": 4,
+      "height_level": 3,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.023867106065154076
+    },
+    "quality_score": 0.39884270168840885,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 34.471340999996755,
+    "frame_index": 536,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "wide-legged forward fold",
+      "p": 0.6608880162239075
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 0.8,
+      "rom_level": 4,
+      "height_level": 3,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.015539269894361496
+    },
+    "quality_score": 0.3973033629357815,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 35.0027388749877,
+    "frame_index": 544,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "wide-legged forward fold",
+      "p": 0.5906687378883362
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 0.8,
+      "rom_level": 4,
+      "height_level": 3,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.015781531110405922
+    },
+    "quality_score": 0.39708988778293136,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 35.536795582971536,
+    "frame_index": 552,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "wide-legged forward fold",
+      "p": 0.4616692066192627
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 2.0,
+      "rom_level": 4,
+      "height_level": 3,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.03242179751396179
+    },
+    "quality_score": 0.4010980308055878,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 36.068782624963205,
+    "frame_index": 560,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "wide-legged forward fold",
+      "p": 0.20396091043949127
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 2.0,
+      "rom_level": 4,
+      "height_level": 3,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.035361021757125854
+    },
+    "quality_score": 0.40367938131093983,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 36.60348354099551,
+    "frame_index": 568,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "wide-legged forward fold",
+      "p": 0.31146225333213806
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 2.0,
+      "rom_level": 4,
+      "height_level": 3,
+      "torso_rotation": 3,
+      "direction": "none",
+      "no_obvious_issue_p": 0.06908077001571655
+    },
+    "quality_score": 0.4153518617153168,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 36.97886174998712,
+    "frame_index": 576,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "wide-legged forward fold",
+      "p": 0.4608897864818573
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 2.0,
+      "rom_level": 4,
+      "height_level": 3,
+      "torso_rotation": 3,
+      "direction": "none",
+      "no_obvious_issue_p": 0.09897582978010178
+    },
+    "quality_score": 0.43819978088140493,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 37.29109112499282,
+    "frame_index": 584,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "wide-legged forward fold",
+      "p": 0.6980891823768616
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 2.0,
+      "rom_level": 4,
+      "height_level": 3,
+      "torso_rotation": 3,
+      "direction": "none",
+      "no_obvious_issue_p": 0.1388120949268341
+    },
+    "quality_score": 0.4655408471822739,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 37.65237370796967,
+    "frame_index": 592,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "wide-legged forward fold",
+      "p": 0.8439715504646301
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 2.0,
+      "rom_level": 4,
+      "height_level": 3,
+      "torso_rotation": 3,
+      "direction": "none",
+      "no_obvious_issue_p": 0.13211889564990997
+    },
+    "quality_score": 0.4628864273428917,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 38.18738099996699,
+    "frame_index": 600,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "wide-legged forward fold",
+      "p": 0.5450856685638428
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 2.0,
+      "rom_level": 4,
+      "height_level": 3,
+      "torso_rotation": 3,
+      "direction": "none",
+      "no_obvious_issue_p": 0.12743660807609558
+    },
+    "quality_score": 0.45512653738260267,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 38.737978207995184,
+    "frame_index": 608,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "fire hydrant (standing)",
+      "p": 0.11727962642908096
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 2.0,
+      "rom_level": 1,
+      "height_level": 3,
+      "torso_rotation": 5,
+      "direction": "none",
+      "no_obvious_issue_p": 0.1878398358821869
+    },
+    "quality_score": 0.4724669992923737,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 39.271157999988645,
+    "frame_index": 616,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "fire hydrant (standing)",
+      "p": 0.11105359345674515
+    },
+    "mistakes": [],
+    "metrics": {
+      "speed_rps": 2.0,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.15669286251068115
+    },
+    "quality_score": 0.43017958998680117,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 39.80148541595554,
+    "frame_index": 624,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "kickback (right leg)",
+      "p": 0.28835877776145935
+    },
+    "mistakes": [
+      {
+        "name": "as fast as possible",
+        "p": 0.3575393855571747
+      }
+    ],
+    "metrics": {
+      "speed_rps": 2.5,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.12618623673915863
+    },
+    "quality_score": 0.3988977760076523,
+    "speak_now": 0.0
+  },
+  {
+    "timestamp_s": 40.33761320798658,
+    "frame_index": 632,
+    "source_fps": 15.0,
+    "exercise": {
+      "name": "kickback (right leg)",
+      "p": 0.6419638395309448
+    },
+    "mistakes": [
+      {
+        "name": "as fast as possible",
+        "p": 0.5552912354469299
+      }
+    ],
+    "metrics": {
+      "speed_rps": 2.5,
+      "rom_level": 1,
+      "height_level": 5,
+      "torso_rotation": 2,
+      "direction": "none",
+      "no_obvious_issue_p": 0.0873725637793541
+    },
+    "quality_score": 0.33258539587259295,
+    "speak_now": 0.0
+  }
+]
