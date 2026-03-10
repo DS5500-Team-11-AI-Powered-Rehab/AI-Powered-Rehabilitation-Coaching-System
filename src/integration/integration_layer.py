@@ -149,7 +149,7 @@ class IntegrationLayer:
         # Memory State
         self.coached_mistakes = set()  # Mistake types we've addressed
         self.coaching_history = []     # Full history with timestamps
-        self.last_coaching_time = 0
+        self.last_coaching_time = -1000  # Initialize to large negative value (never coached before)
         
         # Cache Memory
         self.cache = ResponseCache(self.config.CACHE_DIR)

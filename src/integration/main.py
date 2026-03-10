@@ -151,10 +151,15 @@ def main():
         for mistake in summary['coached_mistakes']:
             print(f"  - {mistake}")
     
+    from collections import Counter
+    
     # Tier breakdown
-    tier_breakdown = {"tier_1": 0, "tier_2": 0, "tier_3": 0}
-    for entry in summary['coaching_history']:
-        tier_breakdown[entry['tier_used']] += 1
+    tier_counts = Counter(entry['tier_used'] for entry in summary['coaching_history'])
+    tier_breakdown = {
+        "tier_1": tier_counts.get("tier_1", 0),
+        "tier_2": tier_counts.get("tier_2", 0),
+        "tier_3": tier_counts.get("tier_3", 0)
+    }
     
     print(f"\nTier Breakdown:")
     print(f"  Tier 1 (Cache): {tier_breakdown['tier_1']}")

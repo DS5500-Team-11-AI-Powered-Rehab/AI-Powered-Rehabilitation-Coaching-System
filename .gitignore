@@ -1,3 +1,10 @@
 .env
 data/pt_guideline_data
 chroma_db
+tests/integration_testing/rag_infer_logs_test
+tests/integration_testing/rag_infer_logs_val
+tests/integration_testing/synthetic_test_data
+tests/integration_testing/test_results
+tests/integration_testing/synthetic_val_data
+src/integration/__pycache__
+.DS_Store
