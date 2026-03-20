@@ -7,4 +7,5 @@ tests/integration_testing/synthetic_test_data
 tests/integration_testing/test_results
 tests/integration_testing/synthetic_val_data
 src/integration/__pycache__
+rag_infer_logs_train
 .DS_Store
