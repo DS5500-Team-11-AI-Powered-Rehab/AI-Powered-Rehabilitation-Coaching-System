@@ -3,6 +3,7 @@
 import argparse
 import gzip
 import json
+import time
 from pathlib import Path
 
 try:
@@ -34,27 +35,41 @@ def main():
     # ==========================================
     
     print("[Setup] Initializing components...")
+    args = parse_args()
     
     # Initialize config
     config = Config()
+
+    if args.debug_fast:
+        # Relax thresholds for live demo runs where CV emits sparse JSON events.
+        config.WINDOW_SIZE_FRAMES = 30
+        config.MIN_FRAMES = 10
+        config.MIN_PERSISTENCE_RATE = 0.15
+        config.MIN_CONFIDENCE = 0.25
+        config.MIN_DURATION_SECONDS = 0.5
+        config.MIN_COACHING_INTERVAL = 2
+        config.RE_COACHING_THRESHOLD = 5
     
     # Initialize IntegrationLayer
     session_id = "test_session_123"
     integration_layer = IntegrationLayer(session_id=session_id, config=config)
+
+    print(
+        "[Setup] Thresholds "
+        f"(window_frames={config.WINDOW_SIZE_FRAMES}, "
+        f"min_frames={config.MIN_FRAMES}, "
+        f"min_persistence={config.MIN_PERSISTENCE_RATE}, "
+        f"min_confidence={config.MIN_CONFIDENCE}, "
+        f"min_duration_s={config.MIN_DURATION_SECONDS})"
+    )
     
     # Populate cache with default patterns
     print("[Setup] Populating Tier 1 cache...")
     integration_layer.cache.populate_defaults()
     cached_patterns = integration_layer.list_cached_patterns()
     print(f"[Setup] Cached {len(cached_patterns)} common patterns")
-    
-    # Initialize LangGraph
-    print("[Setup] Building LangGraph workflow...")
-    coaching_graph = create_coaching_graph()
-    
-    print("[Setup] ✅ All components ready!\n")
-    
-    args = parse_args()
+
+    print("[Setup] ✅ Core components ready!\n")
 
     # ==========================================
     # STEP 2: LOAD CV OUTPUT
@@ -63,16 +78,29 @@ def main():
     print("[CV] Loading CV output stream...")
 
     if args.cv_jsonl:
-        cv_frames = load_cv_output_from_file(args.cv_jsonl)
         print(f"[CV] Source: {args.cv_jsonl}")
+        if args.follow:
+            print("[CV] Mode: live follow (waiting for appended frames)")
+            frame_source = iter_cv_output_from_file(
+                filepath=args.cv_jsonl,
+                follow=True,
+                poll_interval=args.poll_interval,
+            )
+        else:
+            cv_frames = load_cv_output_from_file(args.cv_jsonl)
+            if args.max_frames > 0:
+                cv_frames = cv_frames[:args.max_frames]
+            print(f"[CV] Loaded {len(cv_frames)} frames")
+            frame_source = cv_frames
     else:
         cv_frames = generate_mock_cv_frames()
+        if args.max_frames > 0:
+            cv_frames = cv_frames[:args.max_frames]
         print("[CV] Source: built-in mock frames")
+        print(f"[CV] Loaded {len(cv_frames)} frames")
+        frame_source = cv_frames
 
-    if args.max_frames > 0:
-        cv_frames = cv_frames[:args.max_frames]
-
-    print(f"[CV] Loaded {len(cv_frames)} frames\n")
+    print()
 
     coaching_graph = None
     if args.use_langgraph:
@@ -99,7 +127,10 @@ def main():
     
     coaching_count = 0
     
-    for i, cv_frame in enumerate(cv_frames):
+    for i, cv_frame in enumerate(frame_source):
+        if args.max_frames > 0 and i >= args.max_frames:
+            print(f"[Run] Reached --max-frames={args.max_frames}; stopping.")
+            break
         
         # STEP 3A: IntegrationLayer preprocessing
         coaching_event = integration_layer.process_frame(cv_frame)
@@ -277,29 +308,77 @@ def load_cv_output_from_file(filepath: str):
             if line.strip():  # Skip empty lines
                 frame = json.loads(line)
                 frames.append(frame)
-    def parse_args() -> argparse.Namespace:
-        ap = argparse.ArgumentParser(description="Run CV -> integration pipeline")
-        ap.add_argument(
-            "--cv-jsonl",
-            type=str,
-            default="",
-            help="Path to infer_stream output (.jsonl or .jsonl.gz). If omitted, uses mock frames.",
-        )
-        ap.add_argument(
-            "--max-frames",
-            type=int,
-            default=0,
-            help="Limit number of input frames for quick tests (0 = all).",
-        )
-        ap.add_argument(
-            "--use-langgraph",
-            action="store_true",
-            help="Run full LangGraph orchestration after integration filtering.",
-        )
-        return ap.parse_args()
-
     
     return frames
+
+
+def parse_args() -> argparse.Namespace:
+    ap = argparse.ArgumentParser(description="Run CV -> integration pipeline")
+    ap.add_argument(
+        "--cv-jsonl",
+        type=str,
+        default="",
+        help="Path to infer_stream output (.jsonl or .jsonl.gz). If omitted, uses mock frames.",
+    )
+    ap.add_argument(
+        "--max-frames",
+        type=int,
+        default=0,
+        help="Limit number of input frames for quick tests (0 = all).",
+    )
+    ap.add_argument(
+        "--use-langgraph",
+        action="store_true",
+        help="Run full LangGraph orchestration after integration filtering.",
+    )
+    ap.add_argument(
+        "--follow",
+        action="store_true",
+        help="Follow a growing .jsonl file in real time (for live CV -> integration).",
+    )
+    ap.add_argument(
+        "--poll-interval",
+        type=float,
+        default=0.1,
+        help="Polling interval in seconds when --follow is enabled.",
+    )
+    ap.add_argument(
+        "--debug-fast",
+        action="store_true",
+        help="Relax temporal thresholds for quick live webcam debugging.",
+    )
+    return ap.parse_args()
+
+
+def iter_cv_output_from_file(filepath: str, follow: bool = False, poll_interval: float = 0.1):
+    """Yield CV frames from JSONL. Optionally follow appended lines in real time."""
+    path = Path(filepath)
+
+    if path.suffix == ".gz":
+        # Gzip streams are suitable for offline replay, not for tailing live writes.
+        if follow:
+            raise ValueError("--follow is not supported with .gz files. Use a plain .jsonl output path.")
+        with gzip.open(path, "rt") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    yield json.loads(line)
+        return
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "a+") as f:
+        f.seek(0)
+        while True:
+            line = f.readline()
+            if line:
+                line = line.strip()
+                if line:
+                    yield json.loads(line)
+                continue
+
+            if not follow:
+                break
+            time.sleep(max(0.01, poll_interval))
 
 def example_add_cached_pattern():
     """

@@ -7,7 +7,11 @@ from collections import deque
 from typing import Optional, Dict, List, Set
 from statistics import mean
 import time
-import diskcache
+
+try:
+    import diskcache
+except ImportError:
+    diskcache = None
 
 class Config:
     """Integration layer configuration"""
@@ -50,13 +54,18 @@ class Config:
 
 class ResponseCache:
     """
-    Manages Tier 1 cached responses with disk persistence
-    Uses diskcache for persistent storage across restarts
+    Manages Tier 1 cached responses with optional disk persistence.
+    Falls back to in-memory cache when diskcache is unavailable.
     """
-    
+
     def __init__(self, cache_dir: str, ttl: int = Config.CACHE_TTL):
-        self.cache = diskcache.Cache(cache_dir)
         self.ttl = ttl
+        self._memory_cache = {}
+        self._use_diskcache = diskcache is not None
+        if self._use_diskcache:
+            self.cache = diskcache.Cache(cache_dir)
+        else:
+            self.cache = self._memory_cache
     
     def get(self, cache_key: str) -> Optional[Dict]:
         """
@@ -68,17 +77,17 @@ class ResponseCache:
     def set(self, cache_key: str, response: str, timing: str = "immediate"):
         """
         Add/update cached response
-        
+
         Usage:
-            cache.set("heel_lift_not_moving_up", 
+            cache.set("heel_lift_not_moving_up",
                      "Pause - are you experiencing pain?",
                      timing="immediate")
         """
-        self.cache.set(
-            cache_key,
-            {"response": response, "timing": timing},
-            expire=self.ttl
-        )
+        value = {"response": response, "timing": timing}
+        if self._use_diskcache:
+            self.cache.set(cache_key, value, expire=self.ttl)
+        else:
+            self.cache[cache_key] = value
     
     def has(self, cache_key: str) -> bool:
         """Check if key exists in cache"""
@@ -86,7 +95,10 @@ class ResponseCache:
     
     def delete(self, cache_key: str):
         """Remove cached response"""
-        self.cache.delete(cache_key)
+        if self._use_diskcache:
+            self.cache.delete(cache_key)
+        else:
+            self.cache.pop(cache_key, None)
     
     def clear(self):
         """Clear all cached responses"""
@@ -94,7 +106,9 @@ class ResponseCache:
     
     def list_all(self) -> List[str]:
         """List all cached keys"""
-        return list(self.cache.iterkeys())
+        if self._use_diskcache:
+            return list(self.cache.iterkeys())
+        return list(self.cache.keys())
     
     def populate_defaults(self):
         """
@@ -558,12 +572,13 @@ class IntegrationLayer:
     
     def get_session_summary(self) -> Dict:
         """Get session summary for Progress Agent"""
+        duration_seconds = self.last_coaching_time if self.event_counter > 0 else 0.0
         return {
             'session_id': self.session_id,
             'total_events': self.event_counter,
             'coached_mistakes': list(self.coached_mistakes),
             'coaching_history': self.coaching_history,
-            'session_duration_seconds': self.last_coaching_time
+            'session_duration_seconds': duration_seconds
         }
     
     def reset_session(self):
