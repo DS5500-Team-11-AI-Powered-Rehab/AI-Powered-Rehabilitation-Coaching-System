@@ -10,6 +10,15 @@ except ImportError:
     from state import CoachingState
 import time
 
+# Failure strings produced by tier fallbacks — these trigger the quality gate
+_KNOWN_FAILURE_PATTERNS = [
+    "i apologize", "i'm sorry", "i cannot", "i don't know",
+    "focus on correcting",        # Tier 2 exception fallback
+    "let's focus on correcting",  # Tier 3 exception fallback
+    "maintain proper form",       # Tier 1 cache-miss fallback
+    "as an ai", "i am an ai",
+]
+
 def enrich_context_node(state: CoachingState) -> CoachingState:
     """
     STEP 1: Enrich coaching event with session context
@@ -538,6 +547,82 @@ Output ONLY the polished coaching message, nothing else."""),
     return state
 
 
+def quality_gate_node(state: CoachingState) -> CoachingState:
+    """
+    QUALITY GATE: Validate coaching response; fall back to ground truth if poor.
+
+    Sits between coaching_agent and format_feedback. Evaluates state["feedback_audio"]
+    using three lightweight heuristics and replaces it with a curated cue from
+    GroundTruthLibrary when the response is clearly bad.
+
+    Signals:
+      1. Length — response must be within expected word-count range for the tier
+      2. Relevance — response must mention at least one token from exercise/mistake
+      3. Refusal — response must not contain known failure/fallback strings
+
+    Falls back if fewer than 2 out of 3 signals pass.
+    Tier 1 (cached responses) is always trusted and skipped.
+    """
+    # Tier 1 cache responses are pre-curated — skip evaluation
+    if state.get("tier_used") == "tier_1":
+        state["used_fallback"] = False
+        state["fallback_source"] = None
+        return state
+
+    response = state.get("feedback_audio", "")
+    coaching_event = state["coaching_event"]
+    exercise = coaching_event["exercise"]["name"]
+    mistake = coaching_event["mistake"]["type"]
+    tier = state.get("tier_used", "tier_2")
+
+    # Signal 1: Length gate
+    word_count = len(response.split())
+    min_words = {"tier_2": 8, "tier_3": 15}.get(tier, 8)
+    max_words = {"tier_2": 60, "tier_3": 100}.get(tier, 60)
+    length_ok = min_words <= word_count <= max_words
+
+    # Signal 2: Relevance — response should reference exercise or mistake context
+    context_tokens = (
+        set(exercise.lower().split())
+        | set(mistake.lower().replace("-", " ").split())
+    )
+    response_tokens = set(response.lower().split())
+    relevance_ok = bool(context_tokens & response_tokens)
+
+    # Signal 3: No known failure / refusal patterns
+    response_lower = response.lower()
+    refusal_ok = not any(p in response_lower for p in _KNOWN_FAILURE_PATTERNS)
+
+    quality_score = sum([length_ok, relevance_ok, refusal_ok])
+    use_fallback = quality_score < 2
+
+    if use_fallback and "ground_truth_library" in state and state["ground_truth_library"] is not None:
+        gt_lib = state["ground_truth_library"]
+        cue = gt_lib.lookup(exercise, mistake)
+        if cue:
+            state["feedback_audio"] = cue
+            state["used_fallback"] = True
+            state["fallback_source"] = "ground_truth_library"
+        else:
+            state["feedback_audio"] = gt_lib.template_fallback(exercise, mistake)
+            state["used_fallback"] = True
+            state["fallback_source"] = "template"
+        print(
+            f"[Quality Gate] Fallback triggered (score={quality_score}/3, "
+            f"length={length_ok}, relevance={relevance_ok}, refusal={refusal_ok}) "
+            f"→ {state['fallback_source']}"
+        )
+    else:
+        state["used_fallback"] = False
+        state["fallback_source"] = None
+        if use_fallback:
+            print(f"[Quality Gate] Low quality (score={quality_score}/3) but no library available — keeping response")
+        else:
+            print(f"[Quality Gate] Response passed (score={quality_score}/3)")
+
+    return state
+
+
 def format_feedback_node(state: CoachingState) -> CoachingState:
     """
     FORMAT & DELIVER: Prepare feedback for delivery
@@ -660,6 +745,7 @@ def create_coaching_graph():
     workflow.add_node("tier_2_rag", tier_2_rag_node)
     workflow.add_node("tier_3_reasoning", tier_3_reasoning_node)
     workflow.add_node("coaching_agent", coaching_agent_node)
+    workflow.add_node("quality_gate", quality_gate_node)
     workflow.add_node("format_feedback", format_feedback_node)
     workflow.add_node("progress_tracking", progress_tracking_node)
     
@@ -684,8 +770,9 @@ def create_coaching_graph():
     workflow.add_edge("tier_2_rag", "coaching_agent")
     workflow.add_edge("tier_3_reasoning", "coaching_agent")
     
-    # Coaching agent → Format & deliver
-    workflow.add_edge("coaching_agent", "format_feedback")
+    # Coaching agent → Quality gate → Format & deliver
+    workflow.add_edge("coaching_agent", "quality_gate")
+    workflow.add_edge("quality_gate", "format_feedback")
     
     # Format → Progress tracking (async, doesn't block)
     workflow.add_edge("format_feedback", "progress_tracking")
