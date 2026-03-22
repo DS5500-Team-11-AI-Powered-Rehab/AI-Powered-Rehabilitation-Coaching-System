@@ -11,6 +11,11 @@ try:
 except ImportError:
     from integration_layer import IntegrationLayer, Config
 
+try:
+    from .ground_truth_library import GroundTruthLibrary
+except ImportError:
+    from ground_truth_library import GroundTruthLibrary
+
 
 def main():
     """
@@ -63,6 +68,12 @@ def main():
         f"min_duration_s={config.MIN_DURATION_SECONDS})"
     )
     
+    # Initialize ground-truth fallback library
+    print("[Setup] Loading ground-truth coaching library...")
+    gt_library_path = "data/ground_truth_coaching_cues.json"
+    gt_library = GroundTruthLibrary(gt_library_path)
+    print(f"[Setup] Ground-truth library: {len(gt_library)} pairs loaded")
+
     # Populate cache with default patterns
     print("[Setup] Populating Tier 1 cache...")
     integration_layer.cache.populate_defaults()
@@ -165,6 +176,7 @@ def main():
                 "session_id": integration_layer.session_id,
                 "coaching_history": integration_layer.coaching_history,
                 "cache": integration_layer.cache,
+                "ground_truth_library": gt_library,
                 "tier": coaching_event.get("tier"),
                 "cache_key": coaching_event.get("cache_key"),
                 "routing_reason": coaching_event.get("routing_reason"),
@@ -181,6 +193,8 @@ def main():
             print("[Result] ✅ Coaching delivered")
             print(f"  Tier: {final_state['tier_used']}")
             print(f"  Latency: {final_state.get('latency_ms', 0):.0f}ms")
+            if final_state.get("used_fallback"):
+                print(f"  Fallback: {final_state.get('fallback_source', 'unknown')} (ground-truth cue used)")
             print(f"  Message: \"{final_state['feedback_audio']}\"")
         else:
             # Integration-only mode: show exactly what the integration layer emits.
@@ -230,7 +244,15 @@ def main():
     
     cache_hit_rate = (tier_breakdown['tier_1'] / summary['total_events'] * 100) if summary['total_events'] > 0 else 0
     print(f"\nCache Hit Rate: {cache_hit_rate:.0f}%")
-    
+
+    fallback_count = sum(
+        1 for entry in summary.get("coaching_history", [])
+        if entry.get("used_fallback", False)
+    )
+    if summary['total_events'] > 0:
+        fallback_rate = fallback_count / summary['total_events'] * 100
+        print(f"Ground Truth Fallbacks: {fallback_count} ({fallback_rate:.0f}%)")
+
     print("\n✅ Session complete!")
 
 
