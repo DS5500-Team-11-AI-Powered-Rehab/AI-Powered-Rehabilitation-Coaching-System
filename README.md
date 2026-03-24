@@ -1,15 +1,16 @@
 # AI-Powered-Rehabilitation-Coaching-System
 
-Project Banner
+Our final project purpose is to build an end-to-end prototype of an at-home RAG coaching agent that can act in place of a physical therapist to provide medical feedback to a patient when they are performing rehabilitation exercises. We are a group of 4, Jason, David, Andre and Rongjia, working together as Masters students as part of our Northeastern Data Science Capstone course. This project addresses what we believe is the under-served at-home phase of injury recovery utilizing a multimodal AI coaching agent that combines computer-vision-based (CV) movement analysis with a retrieval-augmented generation (RAG) framework to deliver real-time, clinically grounded feedback during otherwise unsupervised patient physiotherapy exercise. While grounding both the CV and RAG pipelines in applied research, our focus was to build out a functional minimum viable product that is deployable on consumer hardware, especially inexpensive smartphones, and that, while requiring internet connectivity for LLM API prompting, minimizes computational costs.
 
 ## 🎯 The Problem
 
-Recovering from an injury or surgery often requires patients to diligently perform prescribed rehabilitation exercises at home. However, two major challenges persist:
+Injury rehabilitation fundamentally depends on the correct, consistent execution of prescribed exercises over an extended recovery period. In clinical settings, the physiotherapist provides real-time observational feedback such as identifying compensatory movements, unsafe loading patterns, and deviations from prescribed form, and then adjusts the exercise program as the patient progresses. Once discharged to home-based care, patients lose access to this supervisory feedback loop entirely. 
 
-- **Incorrect form** — Without real-time professional guidance, many patients perform exercises improperly, which can slow recovery, worsen the injury, or lead to new complications.
-- **Poor adherence** — Patient compliance (actually completing the full prescribed routine and frequency) remains one of the biggest barriers to successful at-home rehabilitation.
-
-Traditional in-person physiotherapy is expensive, time-consuming, and not always accessible — especially in rural areas or during long-term recovery.
+This project frames the core challenge as a multi-task machine learning problem combining three distinct components:
+• Multi-label movement quality classification. Given a variable-length video sequence of a patient performing a rehabilitation exercise, simultaneously classify exercise identity, form errors, movement speed, range of motion, torso orientation, and lateral direction.
+• Retrieval-augmented coaching feedback generation. Given a detected movement error and its clinical context, retrieve the most relevant physiotherapy guidance from a curated medical corpus and generate patient-facing coaching feed-back that is accurate, safe, and actionable. 
+• Stateful multi-agent orchestration (integration layer). Route detected errors through a three-tier response system: cached responses for
+known patterns, RAG-grounded LLM generation for novel errors, and full multi-step agent reasoning for persistent or complex cases
 
 ## 🚀 Our Solution
 
