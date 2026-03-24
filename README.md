@@ -7,10 +7,9 @@ Our final project purpose is to build an end-to-end prototype of an at-home RAG 
 Injury rehabilitation fundamentally depends on the correct, consistent execution of prescribed exercises over an extended recovery period. In clinical settings, the physiotherapist provides real-time observational feedback such as identifying compensatory movements, unsafe loading patterns, and deviations from prescribed form, and then adjusts the exercise program as the patient progresses. Once discharged to home-based care, patients lose access to this supervisory feedback loop entirely. 
 
 This project frames the core challenge as a multi-task machine learning problem combining three distinct components:
-• Multi-label movement quality classification. Given a variable-length video sequence of a patient performing a rehabilitation exercise, simultaneously classify exercise identity, form errors, movement speed, range of motion, torso orientation, and lateral direction.
-• Retrieval-augmented coaching feedback generation. Given a detected movement error and its clinical context, retrieve the most relevant physiotherapy guidance from a curated medical corpus and generate patient-facing coaching feed-back that is accurate, safe, and actionable. 
-• Stateful multi-agent orchestration (integration layer). Route detected errors through a three-tier response system: cached responses for
-known patterns, RAG-grounded LLM generation for novel errors, and full multi-step agent reasoning for persistent or complex cases
+- **Multi-label movement quality classification** — Given a variable-length video sequence of a patient performing a rehabilitation exercise, simultaneously classify exercise identity, form errors, movement speed, range of motion, torso orientation, and lateral direction.
+- **Retrieval-augmented coaching feedback generation** — Given a detected movement error and its clinical context, retrieve the most relevant physiotherapy guidance from a curated medical corpus and generate patient-facing coaching feed-back that is accurate, safe, and actionable. 
+- **Stateful multi-agent orchestration (integration layer)** — Route detected errors through a three-tier response system: cached responses for known patterns, RAG-grounded LLM generation for novel errors, and full multi-step agent reasoning for persistent or complex cases
 
 ## 🚀 Our Solution
 
