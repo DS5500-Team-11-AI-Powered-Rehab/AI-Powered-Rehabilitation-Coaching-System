@@ -17,6 +17,7 @@ import torch.nn.functional as F
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
+from mediapipe.framework.formats import landmark_pb2
 
 
 MODEL_URL = (
@@ -24,6 +25,7 @@ MODEL_URL = (
     "pose_landmarker/pose_landmarker_full/float16/latest/"
     "pose_landmarker_full.task"
 )
+
 
 def download_if_missing(url: str, dst: Path) -> Path:
     dst.parent.mkdir(parents=True, exist_ok=True)
@@ -69,7 +71,6 @@ def normalize_pose_seq(L: np.ndarray, V: np.ndarray) -> np.ndarray:
     """
     L = np.nan_to_num(L, nan=0.0).astype(np.float32)
     V = np.nan_to_num(V, nan=0.0).astype(np.float32)
-
 
     hip = 0.5 * (L[:, 23, :2] + L[:, 24, :2])
     xy = L[:, :, :2] - hip[:, None, :]
@@ -156,9 +157,18 @@ def main() -> None:
     ap.add_argument("--stride", type=int, default=8)
     ap.add_argument("--device", type=str, default="auto")
     ap.add_argument("--show", action="store_true")
+    ap.add_argument(
+        "--preview-scale",
+        type=float,
+        default=0.5,
+        help="Scale factor for displayed preview window, e.g. 0.5 = half size",
+    )
+    ap.add_argument("--line-thickness", type=int, default=2)
+    ap.add_argument("--circle-radius", type=int, default=2)
     ap.add_argument("--out-jsonl", type=str, default="")
     ap.add_argument("--mist-thresh", type=float, default=0.35)
-    ap.add_argument("--min-exercise-p", type=float, default=0.25, help="If max(exercise) < this, label as 'unknown'")
+    ap.add_argument("--min-exercise-p", type=float, default=0.25,
+                    help="If max(exercise) < this, label as 'unknown'")
     args = ap.parse_args()
 
     ckpt_path = Path(args.ckpt).expanduser().resolve()
@@ -214,6 +224,13 @@ def main() -> None:
     )
     landmarker = vision.PoseLandmarker.create_from_options(options)
 
+    mp_drawing = mp.solutions.drawing_utils
+    mp_pose = mp.solutions.pose
+    drawing_spec = mp_drawing.DrawingSpec(
+        thickness=args.line_thickness,
+        circle_radius=args.circle_radius,
+    )
+
     src: Union[int, str] = int(args.source) if args.source.isdigit() else args.source
     cap = cv2.VideoCapture(src)
     if not cap.isOpened():
@@ -229,6 +246,9 @@ def main() -> None:
     out_f = open(args.out_jsonl, "w") if args.out_jsonl else None
     t0 = time.perf_counter()
     frame_idx = 0
+
+    if args.show:
+        cv2.namedWindow("infer_stream", cv2.WINDOW_NORMAL)
 
     try:
         while True:
@@ -319,10 +339,8 @@ def main() -> None:
                     "timestamp_s": float(time.perf_counter() - t0),
                     "frame_index": int(frame_idx),
                     "source_fps": float(fps),
-
                     "exercise": exercise,
                     "mistakes": mistakes,
-
                     "metrics": {
                         "speed_rps": speed_val,
                         "rom_level": rom_level,
@@ -331,7 +349,6 @@ def main() -> None:
                         "direction": direction,
                         "no_obvious_issue_p": no_issue_p,
                     },
-
                     "quality_score": quality,
                     "speak_now": 0.0,
                 }
@@ -343,7 +360,38 @@ def main() -> None:
                     out_f.flush()
 
             if args.show:
-                cv2.imshow("infer_stream", frame_bgr)
+                display_frame = frame_bgr.copy()
+
+                if res.pose_landmarks:
+                    pose_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
+                    pose_landmarks_proto.landmark.extend([
+                        landmark_pb2.NormalizedLandmark(
+                            x=lm.x,
+                            y=lm.y,
+                            z=lm.z,
+                            visibility=getattr(lm, "visibility", 1.0),
+                        )
+                        for lm in res.pose_landmarks[0]
+                    ])
+
+                    mp_drawing.draw_landmarks(
+                        display_frame,
+                        pose_landmarks_proto,
+                        mp_pose.POSE_CONNECTIONS,
+                        landmark_drawing_spec=drawing_spec,
+                        connection_drawing_spec=drawing_spec,
+                    )
+
+                scale = max(0.05, float(args.preview_scale))
+                if scale != 1.0:
+                    h, w = display_frame.shape[:2]
+                    display_frame = cv2.resize(
+                        display_frame,
+                        (max(1, int(w * scale)), max(1, int(h * scale))),
+                        interpolation=cv2.INTER_AREA,
+                    )
+
+                cv2.imshow("infer_stream", display_frame)
                 if (cv2.waitKey(1) & 0xFF) == 27:
                     break
 
