@@ -23,6 +23,9 @@ conda activate rehab_ai_env
 # Quick test (10 videos)
 python test_integration.py --dataset synthetic --max-videos 10 --config tuned_config.json
 
+# Quick test on new CV train logs (10 videos)
+python test_integration.py --dataset train --max-videos 10
+
 # Full test (all 217 test videos)
 python test_integration.py --dataset synthetic --config tuned_config.json
 
@@ -50,6 +53,7 @@ tests/
     ├── TEST_README.md                 # This file
     ├── tuned_config.json              # Relaxed thresholds for testing
     ├── rag_infer_logs_test/           # QEVD test event logs (538 files)
+    ├── rag_infer_logs_train/          # New CV pipeline train logs
     ├── rag_infer_logs_val/            # QEVD validation event logs (2,264 files)
     ├── synthetic_test_data/           # Generated synthetic data from test (217 videos)
     ├── synthetic_val_data/            # Generated synthetic data from val (1,292 videos)
@@ -86,6 +90,7 @@ The QEVD dataset (`rag_infer_logs_test` and `rag_infer_logs_val`) contains **eve
 | Dataset | Files | Videos with Frames | Synthetic Videos | Size |
 |---------|-------|-------------------|------------------|------|
 | rag_infer_logs_test | 538 | 217 | 217 | 14 MB |
+| rag_infer_logs_train | (new) | (new) | Optional | (new) |
 | rag_infer_logs_val | 2,264 | 1,292 | 1,292 | 81 MB |
 | **Total** | 2,802 | 1,509 | **1,509** | **95 MB** |
 
@@ -111,6 +116,9 @@ python generate_synthetic_data.py --input rag_infer_logs_test --output synthetic
 
 # Generate from validation set (1,292 videos, ~81 MB)
 python generate_synthetic_data.py --input rag_infer_logs_val --output synthetic_val_data --num-videos 10000 --frames-per-video 120 --seed 43
+
+# (Optional) Generate from train set
+python generate_synthetic_data.py --input rag_infer_logs_train --output synthetic_train_data --num-videos 10000 --frames-per-video 120 --seed 44
 ```
 
 ### **Step 3: Run First Test**
@@ -158,7 +166,7 @@ Automated end-to-end testing pipeline that runs all three testing scripts in seq
 **Usage:**
 ```bash
 conda activate rehab_ai_env
-cd tests/
+cd tests/integration_testing
 ./quick_start_test.sh
 ```
 

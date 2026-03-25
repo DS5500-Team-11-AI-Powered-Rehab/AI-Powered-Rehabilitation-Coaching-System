@@ -147,13 +147,13 @@ layer = IntegrationLayer(session_id="test", config=config)
 
 ## Testing
 
-Comprehensive test suite validates temporal filtering logic with synthetic continuous frame data.
+Comprehensive test suite validates temporal filtering logic on both real CV event logs and synthetic continuous frame data.
 
 ### Quick Test
 ```bash
-cd tests/
+cd tests/integration_testing
 conda activate rehab_ai_env
-python test_integration.py --dataset synthetic --max-videos 10 --config tuned_config.json
+python test_integration.py --dataset train --max-videos 10 --config tuned_config.json
 ```
 
 ### Full Test Suite
@@ -168,7 +168,7 @@ python test_integration.py --dataset synthetic --max-videos 10 --config tuned_co
 - **Coverage:** 27-32% of videos generate coaching events
 - **Tier distribution:** Balanced routing across all three tiers
 
-See [tests/TEST_README.md](../../tests/TEST_README.md) for detailed testing documentation.
+See [tests/integration_testing/TEST_README.md](../../tests/integration_testing/TEST_README.md) for detailed testing documentation.
 
 ---
 
@@ -232,7 +232,7 @@ src/integration/
 
 When modifying filtering logic:
 
-1. **Update tests** - Add cases to `tests/test_integration.py`
+1. **Update tests** - Add cases to `tests/integration_testing/test_integration.py`
 2. **Validate thresholds** - Run full test suite on both datasets
 3. **Document changes** - Update this README and inline comments
 4. **Verify performance** - Check event rate stays within target range
@@ -241,12 +241,12 @@ When modifying filtering logic:
 
 ## References
 
-- **Testing Guide:** [tests/TEST_README.md](../../tests/TEST_README.md)
-- **Dataset:** QEVD rehabilitation exercise dataset (1,509 videos)
+- **Testing Guide:** [tests/integration_testing/TEST_README.md](../../tests/integration_testing/TEST_README.md)
+- **Datasets:** CV event logs (`rag_infer_logs_train`, `rag_infer_logs_test`, `rag_infer_logs_val`) plus synthetic evaluation sets
 - **LangGraph Integration:** Coming in Week 8
 
 ---
 
 **Author:** David Ryan  
-**Last Updated:** March 10, 2026  
+**Last Updated:** March 20, 2026  
 **Status:** Testing Complete, Ready for LangGraph Integration

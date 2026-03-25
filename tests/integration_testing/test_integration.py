@@ -4,6 +4,7 @@ Tests integration layer with real CV output from QEVD dataset
 
 Usage:
     python test_integration.py --dataset test
+    python test_integration.py --dataset train
     python test_integration.py --dataset val
     python test_integration.py --dataset both
 """
@@ -30,9 +31,11 @@ CV_OUTPUT_BASE = Path("/Users/davidryan/Documents_Local/GitHub/AI-Powered-Rehabi
 
 DATASETS = {
     'test': CV_OUTPUT_BASE / "rag_infer_logs_test",
+    'train': CV_OUTPUT_BASE / "rag_infer_logs_train",
     'val': CV_OUTPUT_BASE / "rag_infer_logs_val",
     'sample': CV_OUTPUT_BASE / "sample_cv_output",  # Small sample data for quick testing
     'synthetic': CV_OUTPUT_BASE / "synthetic_test_data",  # Generated synthetic data from test
+    'synthetic_train': CV_OUTPUT_BASE / "synthetic_train_data",  # Generated synthetic data from train
     'synthetic_val': CV_OUTPUT_BASE / "synthetic_val_data",  # Generated synthetic data from val
 }
 
@@ -270,6 +273,23 @@ class IntegrationTester:
             return
         
         print(f"✅ Loaded {len(videos)} videos")
+
+        # Detect event-log style datasets (single-frame records) that cannot
+        # satisfy temporal persistence thresholds used by the integration layer.
+        avg_frames = sum(v['num_frames'] for v in videos) / len(videos)
+        if avg_frames < self.config.MIN_FRAMES:
+            print(
+                "⚠️  Dataset appears to contain short event logs, not continuous frame sequences."
+            )
+            print(
+                f"   Avg frames/video: {avg_frames:.2f} (MIN_FRAMES={self.config.MIN_FRAMES})"
+            )
+            print(
+                "   This will typically produce 0 coaching events because persistence/duration checks cannot pass."
+            )
+            print(
+                "   Suggested next step: generate synthetic continuous frames with generate_synthetic_data.py"
+            )
         
         # Limit if specified
         if max_videos:
@@ -386,8 +406,8 @@ class IntegrationTester:
 
 def main():
     parser = argparse.ArgumentParser(description='Test Integration Layer with CV Outputs')
-    parser.add_argument('--dataset', choices=['test', 'val', 'sample', 'both', 'synthetic', 'synthetic_val'], default='test',
-                       help='Which dataset to test on (test/val=QEVD event logs, sample=small test, synthetic=generated data)')
+    parser.add_argument('--dataset', choices=['test', 'train', 'val', 'sample', 'both', 'synthetic', 'synthetic_train', 'synthetic_val'], default='train',
+                       help='Which dataset to test on (test/train/val=CV event logs, sample=small test, synthetic=generated data)')
     parser.add_argument('--verbose', action='store_true',
                        help='Print detailed output for each video')
     parser.add_argument('--max-videos', type=int, default=None,
@@ -439,7 +459,7 @@ if __name__ == "__main__":
 USAGE EXAMPLES:
 
 # 1. Quick test on first 10 videos
-python test_integration.py --dataset test --max-videos 10
+python test_integration.py --dataset train --max-videos 10
 
 # 2. Full test on validation set
 python test_integration.py --dataset val
@@ -448,8 +468,8 @@ python test_integration.py --dataset val
 python test_integration.py --dataset both
 
 # 4. Verbose output (see each event)
-python test_integration.py --dataset test --max-videos 5 --verbose
+python test_integration.py --dataset train --max-videos 5 --verbose
 
 # 5. Test with custom config
-python test_integration.py --dataset test --config custom_config.json
+python test_integration.py --dataset train --config custom_config.json
 """

@@ -155,13 +155,14 @@ AI-Powered-Rehabilitation-Coaching-System/
 │       └── logging.py               # Logging utilities
 │
 ├── tests/                           # Testing suite
-│   ├── test_integration.py          # Integration layer test runner
-│   ├── test_tune_thresholds.py      # Threshold tuning analyzer
-│   ├── test_visualize.py            # Visualization generator
-│   ├── generate_synthetic_data.py   # Generate synthetic test data
-│   ├── quick_start_test.sh          # Automated test pipeline
-│   ├── TEST_README.md               # Comprehensive testing guide
-│   ├── tuned_config.json            # Validated threshold configuration
+│   ├── integration_testing/
+│   │   ├── test_integration.py      # Integration layer test runner
+│   │   ├── test_tune_thresholds.py  # Threshold tuning analyzer
+│   │   ├── test_visualize.py        # Visualization generator
+│   │   ├── generate_synthetic_data.py  # Generate synthetic test data
+│   │   ├── quick_start_test.sh      # Automated test pipeline
+│   │   ├── TEST_README.md           # Comprehensive testing guide
+│   │   └── tuned_config.json        # Validated threshold configuration
 │
 ├── scripts/                         # One-off runnable scripts
 │   ├── ingest_pt_data.py            # Populate ChromaDB with PT guidelines

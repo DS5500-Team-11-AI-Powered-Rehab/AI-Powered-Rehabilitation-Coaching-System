@@ -1,11 +1,20 @@
-"""
-Main integration loop: CV Stream → IntegrationLayer → LangGraph → Delivery
-This is the entry point that ties everything together
-"""
+"""Main integration loop: CV Stream -> IntegrationLayer -> optional LangGraph."""
 
+import argparse
+import gzip
 import json
-from integration_layer import IntegrationLayer, Config
-from graph import create_coaching_graph
+import time
+from pathlib import Path
+
+try:
+    from .integration_layer import IntegrationLayer, Config
+except ImportError:
+    from integration_layer import IntegrationLayer, Config
+
+try:
+    from .ground_truth_library import GroundTruthLibrary
+except ImportError:
+    from ground_truth_library import GroundTruthLibrary
 
 
 def main():
@@ -31,43 +40,92 @@ def main():
     # ==========================================
     
     print("[Setup] Initializing components...")
+    args = parse_args()
     
     # Initialize config
     config = Config()
+
+    if args.debug_fast:
+        # Relax thresholds for live demo runs where CV emits sparse JSON events.
+        config.WINDOW_SIZE_FRAMES = 30
+        config.MIN_FRAMES = 10
+        config.MIN_PERSISTENCE_RATE = 0.15
+        config.MIN_CONFIDENCE = 0.25
+        config.MIN_DURATION_SECONDS = 0.5
+        config.MIN_COACHING_INTERVAL = 2
+        config.RE_COACHING_THRESHOLD = 5
     
     # Initialize IntegrationLayer
     session_id = "test_session_123"
     integration_layer = IntegrationLayer(session_id=session_id, config=config)
+
+    print(
+        "[Setup] Thresholds "
+        f"(window_frames={config.WINDOW_SIZE_FRAMES}, "
+        f"min_frames={config.MIN_FRAMES}, "
+        f"min_persistence={config.MIN_PERSISTENCE_RATE}, "
+        f"min_confidence={config.MIN_CONFIDENCE}, "
+        f"min_duration_s={config.MIN_DURATION_SECONDS})"
+    )
     
+    # Initialize ground-truth fallback library
+    print("[Setup] Loading ground-truth coaching library...")
+    gt_library_path = "data/ground_truth_coaching_cues.json"
+    gt_library = GroundTruthLibrary(gt_library_path)
+    print(f"[Setup] Ground-truth library: {len(gt_library)} pairs loaded")
+
     # Populate cache with default patterns
     print("[Setup] Populating Tier 1 cache...")
     integration_layer.cache.populate_defaults()
     cached_patterns = integration_layer.list_cached_patterns()
     print(f"[Setup] Cached {len(cached_patterns)} common patterns")
-    
-    # Initialize LangGraph
-    print("[Setup] Building LangGraph workflow...")
-    coaching_graph = create_coaching_graph()
-    
-    print("[Setup] ✅ All components ready!\n")
-    
+
+    print("[Setup] ✅ Core components ready!\n")
+
     # ==========================================
     # STEP 2: LOAD CV OUTPUT
     # ==========================================
-    
-    # TODO: Replace with your actual CV output
-    # For now, using mock data
-    
+
     print("[CV] Loading CV output stream...")
-    
-    # Option A: Load from file
-    # with open('path/to/cv_output.jsonl') as f:
-    #     cv_frames = [json.loads(line) for line in f]
-    
-    # Option B: Mock data for testing
-    cv_frames = generate_mock_cv_frames()
-    
-    print(f"[CV] Loaded {len(cv_frames)} frames\n")
+
+    if args.cv_jsonl:
+        print(f"[CV] Source: {args.cv_jsonl}")
+        if args.follow:
+            print("[CV] Mode: live follow (waiting for appended frames)")
+            frame_source = iter_cv_output_from_file(
+                filepath=args.cv_jsonl,
+                follow=True,
+                poll_interval=args.poll_interval,
+            )
+        else:
+            cv_frames = load_cv_output_from_file(args.cv_jsonl)
+            if args.max_frames > 0:
+                cv_frames = cv_frames[:args.max_frames]
+            print(f"[CV] Loaded {len(cv_frames)} frames")
+            frame_source = cv_frames
+    else:
+        cv_frames = generate_mock_cv_frames()
+        if args.max_frames > 0:
+            cv_frames = cv_frames[:args.max_frames]
+        print("[CV] Source: built-in mock frames")
+        print(f"[CV] Loaded {len(cv_frames)} frames")
+        frame_source = cv_frames
+
+    print()
+
+    coaching_graph = None
+    if args.use_langgraph:
+        print("[Setup] Building LangGraph workflow...")
+        try:
+            try:
+                from .graph import create_coaching_graph
+            except ImportError:
+                from graph import create_coaching_graph
+            coaching_graph = create_coaching_graph()
+            print("[Setup] LangGraph enabled")
+        except Exception as e:
+            print(f"[Setup] LangGraph unavailable ({e}); falling back to integration-only mode")
+            args.use_langgraph = False
     
     # ==========================================
     # STEP 3: MAIN PROCESSING LOOP
@@ -80,7 +138,10 @@ def main():
     
     coaching_count = 0
     
-    for i, cv_frame in enumerate(cv_frames):
+    for i, cv_frame in enumerate(frame_source):
+        if args.max_frames > 0 and i >= args.max_frames:
+            print(f"[Run] Reached --max-frames={args.max_frames}; stopping.")
+            break
         
         # STEP 3A: IntegrationLayer preprocessing
         coaching_event = integration_layer.process_frame(cv_frame)
@@ -106,29 +167,44 @@ def main():
         print(f"Routing: {coaching_event['tier']} ({coaching_event['routing_reason']})")
         print()
         
-        # STEP 3C: LangGraph processing
-        print(f"[LangGraph] Starting orchestration...")
-        
-        initial_state = {
-            "coaching_event": coaching_event,
-            "session_id": integration_layer.session_id,
-            "coaching_history": integration_layer.coaching_history
-        }
-        
-        # Invoke LangGraph
-        final_state = coaching_graph.invoke(initial_state)
-        
-        # STEP 3D: Record completion in IntegrationLayer
-        integration_layer.record_coaching_complete(
-            coaching_event,
-            final_state['feedback_audio'],
-            final_state['tier_used']
-        )
-        
-        print(f"[Result] ✅ Coaching delivered")
-        print(f"  Tier: {final_state['tier_used']}")
-        print(f"  Latency: {final_state.get('latency_ms', 0):.0f}ms")
-        print(f"  Message: \"{final_state['feedback_audio']}\"")
+        # STEP 3C: Optional LangGraph processing
+        if args.use_langgraph and coaching_graph is not None:
+            print("[LangGraph] Starting orchestration...")
+
+            initial_state = {
+                "coaching_event": coaching_event,
+                "session_id": integration_layer.session_id,
+                "coaching_history": integration_layer.coaching_history,
+                "cache": integration_layer.cache,
+                "ground_truth_library": gt_library,
+                "tier": coaching_event.get("tier"),
+                "cache_key": coaching_event.get("cache_key"),
+                "routing_reason": coaching_event.get("routing_reason"),
+            }
+
+            final_state = coaching_graph.invoke(initial_state)
+
+            integration_layer.record_coaching_complete(
+                coaching_event,
+                final_state["feedback_audio"],
+                final_state["tier_used"],
+            )
+
+            print("[Result] ✅ Coaching delivered")
+            print(f"  Tier: {final_state['tier_used']}")
+            print(f"  Latency: {final_state.get('latency_ms', 0):.0f}ms")
+            if final_state.get("used_fallback"):
+                print(f"  Fallback: {final_state.get('fallback_source', 'unknown')} (ground-truth cue used)")
+            print(f"  Message: \"{final_state['feedback_audio']}\"")
+        else:
+            # Integration-only mode: show exactly what the integration layer emits.
+            integration_layer.record_coaching_complete(
+                coaching_event,
+                response="(integration-only mode)",
+                tier=coaching_event["tier"],
+            )
+            print("[Result] ✅ Integration event emitted (no LangGraph)")
+            print(f"  Event JSON: {json.dumps(coaching_event)}")
         print()
     
     # ==========================================
@@ -168,7 +244,15 @@ def main():
     
     cache_hit_rate = (tier_breakdown['tier_1'] / summary['total_events'] * 100) if summary['total_events'] > 0 else 0
     print(f"\nCache Hit Rate: {cache_hit_rate:.0f}%")
-    
+
+    fallback_count = sum(
+        1 for entry in summary.get("coaching_history", [])
+        if entry.get("used_fallback", False)
+    )
+    if summary['total_events'] > 0:
+        fallback_rate = fallback_count / summary['total_events'] * 100
+        print(f"Ground Truth Fallbacks: {fallback_count} ({fallback_rate:.0f}%)")
+
     print("\n✅ Session complete!")
 
 
@@ -238,13 +322,85 @@ def load_cv_output_from_file(filepath: str):
     """
     frames = []
     
-    with open(filepath, 'r') as f:
+    path = Path(filepath)
+    opener = gzip.open if path.suffix == ".gz" else open
+
+    with opener(path, 'rt') as f:
         for line in f:
             if line.strip():  # Skip empty lines
                 frame = json.loads(line)
                 frames.append(frame)
     
     return frames
+
+
+def parse_args() -> argparse.Namespace:
+    ap = argparse.ArgumentParser(description="Run CV -> integration pipeline")
+    ap.add_argument(
+        "--cv-jsonl",
+        type=str,
+        default="",
+        help="Path to infer_stream output (.jsonl or .jsonl.gz). If omitted, uses mock frames.",
+    )
+    ap.add_argument(
+        "--max-frames",
+        type=int,
+        default=0,
+        help="Limit number of input frames for quick tests (0 = all).",
+    )
+    ap.add_argument(
+        "--use-langgraph",
+        action="store_true",
+        help="Run full LangGraph orchestration after integration filtering.",
+    )
+    ap.add_argument(
+        "--follow",
+        action="store_true",
+        help="Follow a growing .jsonl file in real time (for live CV -> integration).",
+    )
+    ap.add_argument(
+        "--poll-interval",
+        type=float,
+        default=0.1,
+        help="Polling interval in seconds when --follow is enabled.",
+    )
+    ap.add_argument(
+        "--debug-fast",
+        action="store_true",
+        help="Relax temporal thresholds for quick live webcam debugging.",
+    )
+    return ap.parse_args()
+
+
+def iter_cv_output_from_file(filepath: str, follow: bool = False, poll_interval: float = 0.1):
+    """Yield CV frames from JSONL. Optionally follow appended lines in real time."""
+    path = Path(filepath)
+
+    if path.suffix == ".gz":
+        # Gzip streams are suitable for offline replay, not for tailing live writes.
+        if follow:
+            raise ValueError("--follow is not supported with .gz files. Use a plain .jsonl output path.")
+        with gzip.open(path, "rt") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    yield json.loads(line)
+        return
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "a+") as f:
+        f.seek(0)
+        while True:
+            line = f.readline()
+            if line:
+                line = line.strip()
+                if line:
+                    yield json.loads(line)
+                continue
+
+            if not follow:
+                break
+            time.sleep(max(0.01, poll_interval))
 
 def example_add_cached_pattern():
     """

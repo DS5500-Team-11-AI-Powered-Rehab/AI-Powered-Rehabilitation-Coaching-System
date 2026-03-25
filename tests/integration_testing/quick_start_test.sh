@@ -18,12 +18,12 @@ fi
 # Create results directory
 mkdir -p test_results/figures
 
-echo "Step 1: Running baseline test (first 20 videos)..."
+echo "Step 1: Running baseline test on train dataset (first 20 videos)..."
 echo ""
-python test_integration.py --dataset test --max-videos 20
+python test_integration.py --dataset train --max-videos 20
 
 # Get most recent results file
-RESULTS_FILE=$(ls -t test_results/test_results_test_*.json | head -1)
+RESULTS_FILE=$(ls -t test_results/test_results_train_*.json | head -1)
 
 if [ -z "$RESULTS_FILE" ]; then
     echo "❌ No results file found"
@@ -56,5 +56,5 @@ echo ""
 echo "Next steps:"
 echo "  1. Review test_results/figures/ visualizations"
 echo "  2. Check tuned_config.json for recommendations"
-echo "  3. Run full test: python test_integration.py --dataset both"
+echo "  3. Run full test: python test_integration.py --dataset train"
 echo ""
