@@ -1,4 +1,4 @@
-# Coaching Agent
+# Progress Tracker Agent
 
 Personalized physiotherapy coaching powered by **gemma3:4b** (local Ollama) + RAG.
 
@@ -9,7 +9,7 @@ PatientContext (upstream input)
         │
         ▼
 ┌─────────────────────────────────────────────────┐
-│               COACHING AGENT                    │
+│         Progress Tracker AGENT                  │
 │                                                 │
 │  ① Context Receiver                             │
 │     PatientContext: condition, phase,           │
