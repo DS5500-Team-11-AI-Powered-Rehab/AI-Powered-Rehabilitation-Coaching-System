@@ -123,10 +123,15 @@ def tier_2_rag_node(state: CoachingState) -> CoachingState:
     try:
         import chromadb
         from chromadb.utils import embedding_functions
-        
+
         # Initialize ChromaDB client
         chroma_client = chromadb.PersistentClient(path="./chroma_db")
-        
+
+        # Suppress harmless BERT model loading warnings (position_ids mismatch is safe)
+        import logging
+        logging.getLogger("transformers.modeling_utils").setLevel(logging.ERROR)
+        logging.getLogger("transformers.utils.hub").setLevel(logging.ERROR)
+
         # Use sentence-transformers for embeddings
         embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
             model_name="all-MiniLM-L6-v2"
@@ -247,15 +252,20 @@ def tier_3_reasoning_node(state: CoachingState) -> CoachingState:
     try:
         import chromadb
         from chromadb.utils import embedding_functions
-        
+
         # Initialize ChromaDB client
         chroma_client = chromadb.PersistentClient(path="./chroma_db")
-        
+
+        # Suppress harmless BERT model loading warnings (position_ids mismatch is safe)
+        import logging
+        logging.getLogger("transformers.modeling_utils").setLevel(logging.ERROR)
+        logging.getLogger("transformers.utils.hub").setLevel(logging.ERROR)
+
         # Use sentence-transformers for embeddings
         embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
             model_name="all-MiniLM-L6-v2"
         )
-        
+
         # Get or create collection
         collection = chroma_client.get_or_create_collection(
             name="pt_guidelines",
@@ -346,19 +356,17 @@ def tier_3_reasoning_node(state: CoachingState) -> CoachingState:
     # === STEP 3: Agent with Chain-of-Thought Reasoning ===
     try:
         from langchain_anthropic import ChatAnthropic
-        from langchain.agents import create_tool_calling_agent, AgentExecutor
-        from langchain_core.prompts import ChatPromptTemplate
-        
+        from langchain.agents import create_agent
+        from langchain_core.messages import HumanMessage
+
         # Initialize Claude Sonnet 4 with tool use
         llm = ChatAnthropic(
             model="claude-sonnet-4-20250514",
             max_tokens=500,
             temperature=0.4
         )
-        
-        # Create agent prompt
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are an expert physical therapy movement analysis agent. 
+
+        system_prompt = """You are an expert physical therapy movement analysis agent.
 Your role is to perform chain-of-thought reasoning to understand WHY a patient is making a mistake and provide detailed, actionable coaching.
 
 Available context:
@@ -375,43 +383,29 @@ Then synthesize a detailed coaching response (30-50 words) that:
 - Explains the root cause of the mistake
 - Provides specific correction cues
 - Offers encouragement and context
-- Suggests modifications if appropriate"""),
-            ("user", """Physical Therapy Guidelines:
-{context}
+- Suggests modifications if appropriate"""
 
-Current Situation:
-- Exercise: {exercise}
-- Mistake: {mistake_type}
-- Severity: {severity}
-- Patient: {patient_name}, Age {patient_age}
+        # Create agent (LangChain 1.x unified API — returns a compiled graph directly)
+        agent = create_agent(llm, tools, system_prompt=system_prompt)
 
-Recent coaching history: {history_summary}
-
-Perform your analysis and generate a detailed coaching response."""),
-            ("placeholder", "{agent_scratchpad}")
-        ])
-        
-        # Create agent
-        agent = create_tool_calling_agent(llm, tools, prompt)
-        agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=False, max_iterations=3)
-        
         # Prepare context
         context = "\n\n".join(retrieved_docs[:5])
         history_summary = f"{len(coaching_history)} events in session" if coaching_history else "First event in session"
-        
-        # Run agent
-        result = agent_executor.invoke({
-            "context": context,
-            "exercise": exercise,
-            "mistake_type": mistake_type,
-            "severity": severity,
-            "patient_name": patient_profile.get("name", "Patient"),
-            "patient_age": patient_profile.get("age", "unknown"),
-            "history_summary": history_summary
-        })
-        
-        # Extract response
-        agent_output = result.get("output", "")
+
+        user_message = (
+            f"Physical Therapy Guidelines:\n{context}\n\n"
+            f"Current Situation:\n"
+            f"- Exercise: {exercise}\n"
+            f"- Mistake: {mistake_type}\n"
+            f"- Severity: {severity}\n"
+            f"- Patient: {patient_profile.get('name', 'Patient')}, Age {patient_profile.get('age', 'unknown')}\n\n"
+            f"Recent coaching history: {history_summary}\n\n"
+            f"Perform your analysis and generate a detailed coaching response."
+        )
+
+        # Run agent and extract the last message content
+        result = agent.invoke({"messages": [HumanMessage(content=user_message)]})
+        agent_output = result["messages"][-1].content
         state["movement_analysis"] = f"Agent reasoning completed with {len(tools)} tools"
         state["coaching_response"] = agent_output
         
