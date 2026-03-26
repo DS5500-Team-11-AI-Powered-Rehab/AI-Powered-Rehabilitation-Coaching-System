@@ -17,7 +17,8 @@ from pathlib import Path
 from typing import Optional
 
 # ── Path setup: import from progress_tracker_agent ───────────────────────────
-sys.path.insert(0, str(Path(__file__).parent.parent / "progress_tracker_agent"))
+# Add src/agents/ to sys.path so progress_tracker_agent can be imported
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from langchain_ollama import OllamaLLM
 from langchain_core.output_parsers import StrOutputParser
