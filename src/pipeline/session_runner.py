@@ -82,9 +82,17 @@ class SessionRunner:
             window_size=window_size,
         )
 
+        # Load ground truth library for quality gate fallback
+        try:
+            from src.integration.ground_truth_library import GroundTruthLibrary
+            self._ground_truth_library = GroundTruthLibrary("data/ground_truth_coaching_cues.json")
+        except Exception as e:
+            print(f"[SessionRunner] Warning: Ground truth library not available ({e})")
+            self._ground_truth_library = None
+
         # CoachingAgent wraps the LangGraph graph
         from src.agents.coaching_agent.coaching_agent import CoachingAgent
-        self._coaching_agent = CoachingAgent()
+        self._coaching_agent = CoachingAgent(ground_truth_library=self._ground_truth_library)
 
         # Initialize ProgressTrackingAgent with knowledge base
         try:
@@ -118,18 +126,14 @@ class SessionRunner:
         Returns the coaching cue string if a CoachingEvent was emitted,
         or None if no event fired this frame.
         """
-        import time
-
         event: Optional[CoachingEvent] = self._processor.process(cv_frame)
         if event is None:
             return None
 
-        # Time the coaching agent
-        t0 = time.time()
-        cue = self._coaching_agent.handle_event(event)
-        latency_ms = (time.time() - t0) * 1000
+        # Get coaching cue and latency from the graph
+        cue, latency_ms = self._coaching_agent.handle_event(event)
 
-        # Update event with latency and log it
+        # Update event with latency measured by the graph and log it
         event.coaching_latency_ms = latency_ms
         self._log_event(event)
 

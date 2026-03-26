@@ -24,15 +24,16 @@ class CoachingAgent:
         cue = agent.handle_event(event)   # event: CoachingEvent
     """
 
-    def __init__(self):
+    def __init__(self, ground_truth_library=None):
         from src.integration.graph import create_coaching_graph
         self.graph = create_coaching_graph()
         self.coaching_history: List[Dict] = []
         self._event_counter: int = 0
+        self.ground_truth_library = ground_truth_library
 
     # ── Public API ───────────────────────────────────────────────────────────
 
-    def handle_event(self, event) -> str:
+    def handle_event(self, event) -> tuple:
         """
         Translate a CoachingEvent dataclass into graph state and invoke the graph.
 
@@ -43,8 +44,9 @@ class CoachingAgent:
 
         Returns
         -------
-        str
-            The polished coaching cue (state["feedback_audio"]).
+        tuple
+            (cue: str, latency_ms: float)
+            The polished coaching cue and end-to-end latency measured by the graph.
         """
         from src.integration.schemas import CoachingEvent  # local import to avoid cycles
 
@@ -98,9 +100,8 @@ class CoachingAgent:
             "coaching_event": coaching_event_dict,
             "session_id": event.session_id or "default_session",
             "coaching_history": self.coaching_history,
-            # cache and ground_truth_library are None; the graph handles this gracefully
             "cache": None,
-            "ground_truth_library": None,
+            "ground_truth_library": self.ground_truth_library,
             "tier": tier,
             "cache_key": None,
             "routing_reason": f"Priority: {event.priority}",
@@ -110,6 +111,8 @@ class CoachingAgent:
         self._event_counter += 1
 
         cue: str = final_state.get("feedback_audio", "")
+        latency_ms: float = final_state.get("latency_ms", 0.0)
+
         self.coaching_history.append({
             "timestamp": 0,
             "mistake_type": mistake_type,
@@ -118,4 +121,4 @@ class CoachingAgent:
             "severity": severity_str,
             "event_id": coaching_event_dict["event_id"],
         })
-        return cue
+        return cue, latency_ms
