@@ -1,5 +1,6 @@
 """
-SessionRunner — top-level coordinator that wires EventProcessor → CoachingAgent.
+SessionRunner — top-level coordinator that wires integration layer events
+to the CoachingAgent via the CoachingEvent dataclass.
 
 Error handling
 --------------
@@ -10,10 +11,7 @@ human-readable message so the caller knows exactly what to install.
 Usage
 -----
     runner = SessionRunner(patient_profile={"patient_id": "p001", "injury": "ACL"})
-    for frame in cv_stream:
-        cue = runner.process_frame(frame)
-        if cue:
-            print("Coach says:", cue)
+    cue = runner.handle_integration_event(event_json)
     summary = runner.end_session()
 """
 
@@ -42,8 +40,7 @@ if _MISSING_DEPS is None:
         _MISSING_DEPS = "chromadb"
 
 # ── Internal imports ─────────────────────────────────────────────────────────
-from src.integration.event_processor import EventProcessor
-from src.integration.schemas import CoachingEvent
+from src.integration.schemas import CoachingEvent, coachable_event_from_integration_json
 
 LOG_FILE = os.path.join("logs", "session_events.jsonl")
 
@@ -51,17 +48,15 @@ LOG_FILE = os.path.join("logs", "session_events.jsonl")
 class SessionRunner:
     """
     Orchestrates one rehabilitation session:
-      CV frame → EventProcessor → CoachingAgent → coaching cue string.
+      Integration-layer event JSON → CoachingEvent → CoachingAgent → cue string.
 
     Parameters
     ----------
     patient_profile : dict
         Minimal patient metadata.  At minimum include ``patient_id``.
-    window_size : int
-        Number of CV frames in the EventProcessor sliding window (default 70).
     """
 
-    def __init__(self, patient_profile: Dict, window_size: int = 70):
+    def __init__(self, patient_profile: Dict):
         if _MISSING_DEPS:
             raise ImportError(
                 f"Required package '{_MISSING_DEPS}' is not installed.\n"
@@ -71,16 +66,10 @@ class SessionRunner:
             )
 
         self.patient_profile = patient_profile
-        session_id = str(patient_profile.get("patient_id", "session"))
 
         # Clear the session log at session start to avoid cross-run accumulation
         os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
         open(LOG_FILE, "w").close()  # Truncate
-
-        self._processor = EventProcessor(
-            session_id=session_id,
-            window_size=window_size,
-        )
 
         # Load ground truth library for quality gate fallback
         try:
@@ -117,23 +106,26 @@ class SessionRunner:
             print(f"[SessionRunner] Warning: ProgressTrackerAgent not available ({e})")
             self._progress_agent = None
 
-    # ── Frame-level API ──────────────────────────────────────────────────────
+    # ── Event-level API ──────────────────────────────────────────────────────
 
-    def process_frame(self, cv_frame: dict) -> Optional[str]:
+    def handle_integration_event(self, event_json: dict) -> str:
         """
-        Feed one CV frame into the pipeline.
+        Accept a single integration-layer JSON event and return a coaching cue.
 
-        Returns the coaching cue string if a CoachingEvent was emitted,
-        or None if no event fired this frame.
+        Parameters
+        ----------
+        event_json : dict
+            A coaching event dict as emitted by IntegrationLayer.process_frame().
+
+        Returns
+        -------
+        str
+            The coaching cue produced by the LangGraph coaching agent.
         """
-        event: Optional[CoachingEvent] = self._processor.process(cv_frame)
-        if event is None:
-            return None
+        event: CoachingEvent = coachable_event_from_integration_json(event_json)
 
-        # Get coaching cue and latency from the graph
         cue, latency_ms = self._coaching_agent.handle_event(event)
 
-        # Update event with latency measured by the graph and log it
         event.coaching_latency_ms = latency_ms
         self._log_event(event)
 
@@ -145,11 +137,9 @@ class SessionRunner:
         """
         Finalise the session.
 
-        Resets the EventProcessor, generates progress report if agent available,
+        Generates progress report if agent available,
         then returns a summary dict with session events and coaching feedback.
         """
-        self._processor.reset()
-
         events = _read_session_events()
         summary = {
             "patient_id": self.patient_profile.get("patient_id"),
@@ -220,7 +210,6 @@ class SessionRunner:
             summary["progress_report"] = None
 
         return summary
-
 
     # ── Private helpers ─────────────────────────────────────────────────────
 
