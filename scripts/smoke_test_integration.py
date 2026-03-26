@@ -43,7 +43,7 @@ def build_frames():
             "angles": {},
         })
 
-    # Frames 20-69: persistent knee_valgus
+    # Frames 20-69: persistent knee_valgus (50 frames = 71% of 70-frame window)
     for i in range(50):
         frames.append({
             "exercise": "single_leg_squat",
@@ -53,8 +53,9 @@ def build_frames():
             "angles": {"knee": 25.0},
         })
 
-    # Frames 70-79: hip_drop appears (but sparse — below 60 % threshold)
-    for i in range(10):
+    # Frames 70-149: persistent hip_drop (80 frames = 100% of next window)
+    # This tests deduplication — knee_valgus already coached, so hip_drop should fire
+    for i in range(80):
         frames.append({
             "exercise": "single_leg_squat",
             "rep_number": 8,

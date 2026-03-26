@@ -131,7 +131,8 @@ class EventProcessor:
             session_id=self.session_id,
         )
 
-        self._log_event(event)
+        # NOTE: Logging is deferred to SessionRunner.process_frame() so that
+        # coaching_latency_ms can be captured and included in the log
         return event
 
     def reset(self) -> None:
