@@ -124,8 +124,8 @@ def tier_2_rag_node(state: CoachingState) -> CoachingState:
         import chromadb
         from chromadb.utils import embedding_functions
 
-        # Initialize ChromaDB client
-        chroma_client = chromadb.PersistentClient(path="./chroma_db")
+        # Initialize ChromaDB client (coaching agent's vector store)
+        chroma_client = chromadb.PersistentClient(path="./src/agents/coaching_agent/chroma_coaching_db")
 
         # Suppress harmless BERT model loading warnings (position_ids mismatch is safe)
         import logging
@@ -137,9 +137,9 @@ def tier_2_rag_node(state: CoachingState) -> CoachingState:
             model_name="all-MiniLM-L6-v2"
         )
         
-        # Get or create collection
+        # Get or create collection (collection is named "langchain" in the coaching agent's vector store)
         collection = chroma_client.get_or_create_collection(
-            name="pt_guidelines",
+            name="langchain",
             embedding_function=embedding_fn
         )
         
@@ -253,8 +253,8 @@ def tier_3_reasoning_node(state: CoachingState) -> CoachingState:
         import chromadb
         from chromadb.utils import embedding_functions
 
-        # Initialize ChromaDB client
-        chroma_client = chromadb.PersistentClient(path="./chroma_db")
+        # Initialize ChromaDB client (coaching agent's vector store)
+        chroma_client = chromadb.PersistentClient(path="./src/agents/coaching_agent/chroma_coaching_db")
 
         # Suppress harmless BERT model loading warnings (position_ids mismatch is safe)
         import logging
@@ -266,9 +266,9 @@ def tier_3_reasoning_node(state: CoachingState) -> CoachingState:
             model_name="all-MiniLM-L6-v2"
         )
 
-        # Get or create collection
+        # Get or create collection (collection is named "langchain" in the coaching agent's vector store)
         collection = chroma_client.get_or_create_collection(
-            name="pt_guidelines",
+            name="langchain",
             embedding_function=embedding_fn
         )
         

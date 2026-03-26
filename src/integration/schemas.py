@@ -21,6 +21,7 @@ class CoachingEvent:
     priority          : "safety" if any avg severity > 0.8, else "form"
     angles            : latest joint-angle readings from the CV frame
     session_id        : optional session identifier
+    coaching_latency_ms: (optional) time in ms from event detection to coaching cue
     """
 
     exercise: str
@@ -30,3 +31,4 @@ class CoachingEvent:
     priority: str  # "safety" | "form" | "optimization"
     angles: Dict[str, float]
     session_id: str = ""
+    coaching_latency_ms: float = 0.0

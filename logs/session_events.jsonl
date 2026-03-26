@@ -1,3 +1,2 @@
-{"exercise": "single_leg_squat", "rep_number": 7, "persistent_mistakes": ["knee_valgus"], "severity_scores": {"knee_valgus": 0.85}, "priority": "safety", "angles": {"knee": 25.0}, "session_id": "test_001"}
-{"exercise": "single_leg_squat", "rep_number": 7, "persistent_mistakes": ["knee_valgus"], "severity_scores": {"knee_valgus": 0.85}, "priority": "safety", "angles": {"knee": 25.0}, "session_id": "test_001"}
-{"exercise": "single_leg_squat", "rep_number": 7, "persistent_mistakes": ["knee_valgus"], "severity_scores": {"knee_valgus": 0.85}, "priority": "safety", "angles": {"knee": 25.0}, "session_id": "test_001"}
+{"exercise": "single_leg_squat", "rep_number": 7, "persistent_mistakes": ["knee_valgus"], "severity_scores": {"knee_valgus": 0.85}, "priority": "safety", "angles": {"knee": 25.0}, "session_id": "test_001", "coaching_latency_ms": 19872.40695953369}
+{"exercise": "single_leg_squat", "rep_number": 8, "persistent_mistakes": ["hip_drop"], "severity_scores": {"hip_drop": 0.5}, "priority": "form", "angles": {"hip": 18.0}, "session_id": "test_001", "coaching_latency_ms": 3844.571828842163}
