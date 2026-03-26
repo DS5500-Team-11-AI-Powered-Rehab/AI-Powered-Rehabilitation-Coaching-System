@@ -10,11 +10,11 @@ from typing import Optional
 from langchain_ollama import OllamaLLM
 from langchain_core.output_parsers import StrOutputParser
 
-from schemas import PatientContext, ProgressOutput, RehabPhase, make_sample_context
+from progress_tracker_agent.schemas import (
     PatientContext, ProgressOutput, RehabPhase, make_sample_context
 )
-from rag_retriever import ProgressKnowledgeBase
-from prompts import (
+from progress_tracker_agent.rag_retriever import ProgressKnowledgeBase
+from progress_tracker_agent.prompts import (
     COACHING_PROMPT_FLAT, POLISH_PROMPT,
     build_rag_query, format_exercise_history
 )

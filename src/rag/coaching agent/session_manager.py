@@ -184,9 +184,9 @@ class SessionManager:
     def _load_rag(self):
         """Try to load the RAG knowledge base from progress_tracker_agent."""
         try:
-            from rag_retriever import CoachingKnowledgeBase
-            from prompts import build_rag_query
-            from schemas import PatientContext, ConditionCategory, RehabPhase
+            from progress_tracker_agent.rag_retriever import CoachingKnowledgeBase
+            from progress_tracker_agent.prompts import build_rag_query
+            from progress_tracker_agent.schemas import PatientContext, ConditionCategory, RehabPhase
 
             persist_dir = Path(__file__).parent / "chroma_coaching_db"
             if persist_dir.exists():
