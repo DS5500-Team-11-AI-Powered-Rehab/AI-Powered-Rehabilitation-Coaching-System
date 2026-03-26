@@ -1,4 +1,4 @@
-# Progress Tracker Agent
+# Coaching Agent
 
 Personalized physiotherapy coaching powered by **gemma3:4b** (local Ollama) + RAG.
 
@@ -9,7 +9,7 @@ PatientContext (upstream input)
         │
         ▼
 ┌─────────────────────────────────────────────────┐
-│         Progress Tracker AGENT                  │
+│               COACHING AGENT                    │
 │                                                 │
 │  ① Context Receiver                             │
 │     PatientContext: condition, phase,           │
@@ -42,7 +42,7 @@ PatientContext (upstream input)
 ## File Structure
 
 ```
-coaching_agent/
+src/rag/coaching agent/
 ├── coaching_agent.py    # Main agent orchestration
 ├── rag_retriever.py     # ChromaDB knowledge base (reuses trial.ipynb logic)
 ├── prompts.py           # Prompt templates + RAG query builder
