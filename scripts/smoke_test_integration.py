@@ -104,7 +104,7 @@ def main():
             print(f"  Mistakes         : {frame['mistakes']}")
             print(f"  Severity         : {frame['severity']}")
             print(f"  Angles           : {frame['angles']}")
-            print(f"  Coaching cue     : \"{cue}\"")
+            print(f"  Coaching cue     : {cue}")
             print()
 
     print("=" * 60)
