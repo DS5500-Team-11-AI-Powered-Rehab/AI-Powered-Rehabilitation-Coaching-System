@@ -1,0 +1,3 @@
+{"exercise": "single_leg_squat", "rep_number": 7, "persistent_mistakes": ["knee_valgus"], "severity_scores": {"knee_valgus": 0.85}, "priority": "safety", "angles": {"knee": 25.0}, "session_id": "test_001"}
+{"exercise": "single_leg_squat", "rep_number": 7, "persistent_mistakes": ["knee_valgus"], "severity_scores": {"knee_valgus": 0.85}, "priority": "safety", "angles": {"knee": 25.0}, "session_id": "test_001"}
+{"exercise": "single_leg_squat", "rep_number": 7, "persistent_mistakes": ["knee_valgus"], "severity_scores": {"knee_valgus": 0.85}, "priority": "safety", "angles": {"knee": 25.0}, "session_id": "test_001"}
