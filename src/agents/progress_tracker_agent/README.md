@@ -42,7 +42,7 @@ PatientContext (upstream input)
 ## File Structure
 
 ```
-src/rag/coaching agent/
+src/agents/coaching_agent/
 ├── coaching_agent.py    # Main agent orchestration
 ├── rag_retriever.py     # ChromaDB knowledge base (reuses trial.ipynb logic)
 ├── prompts.py           # Prompt templates + RAG query builder
