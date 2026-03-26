@@ -1,4 +1,3 @@
-from .schemas import CoachingEvent
-from .event_processor import EventProcessor
+from .schemas import CoachingEvent, coachable_event_from_integration_json
 
-__all__ = ["CoachingEvent", "EventProcessor"]
+__all__ = ["CoachingEvent", "coachable_event_from_integration_json"]
