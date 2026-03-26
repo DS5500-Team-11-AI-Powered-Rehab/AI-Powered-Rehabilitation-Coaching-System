@@ -6,7 +6,7 @@ Merges two upstream inputs into a PatientContext:
 """
 
 from typing import Optional
-from schemas import (
+from progress_tracker_agent.schemas import (
     PatientContext, ExerciseRecord,
     RehabPhase, ConditionCategory
 )
