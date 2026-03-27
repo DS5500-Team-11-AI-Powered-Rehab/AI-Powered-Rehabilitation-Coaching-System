@@ -1,4 +1,4 @@
-"""Main integration loop: CV Stream -> IntegrationLayer -> optional LangGraph."""
+"""Main integration loop: CV Stream -> IntegrationLayer -> SessionRunner / LangGraph."""
 
 import argparse
 import gzip
@@ -15,6 +15,9 @@ try:
     from .ground_truth_library import GroundTruthLibrary
 except ImportError:
     from ground_truth_library import GroundTruthLibrary
+
+# Module-level SessionRunner singleton — initialised in main() when --session-runner is set
+_session_runner = None
 
 
 def main():
@@ -126,6 +129,28 @@ def main():
         except Exception as e:
             print(f"[Setup] LangGraph unavailable ({e}); falling back to integration-only mode")
             args.use_langgraph = False
+
+    # ── SessionRunner (preferred full-stack path) ───────────────────────────
+    global _session_runner
+    if args.session_runner:
+        print("[Setup] Initialising SessionRunner...")
+        try:
+            try:
+                from src.pipeline.session_runner import SessionRunner
+            except ImportError:
+                import sys
+                sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+                from src.pipeline.session_runner import SessionRunner
+            patient_profile = {
+                "patient_id": args.patient_id,
+                "injury": args.injury,
+                "session_number": 1,
+            }
+            _session_runner = SessionRunner(patient_profile=patient_profile)
+            print(f"[Setup] SessionRunner ready (patient={args.patient_id}, injury={args.injury})")
+        except Exception as e:
+            print(f"[Setup] SessionRunner unavailable ({e}); falling back to --use-langgraph / integration-only mode")
+            args.session_runner = False
     
     # ==========================================
     # STEP 3: MAIN PROCESSING LOOP
@@ -138,122 +163,182 @@ def main():
     
     coaching_count = 0
     
-    for i, cv_frame in enumerate(frame_source):
-        if args.max_frames > 0 and i >= args.max_frames:
-            print(f"[Run] Reached --max-frames={args.max_frames}; stopping.")
-            break
-        
-        # STEP 3A: IntegrationLayer preprocessing
-        coaching_event = integration_layer.process_frame(cv_frame)
-        
-        if coaching_event is None:
-            # No coaching needed this frame
-            if i % 50 == 0:  # Progress indicator
-                print(f"[Frame {i}] No coaching needed (monitoring...)")
-            continue
-        
-        # STEP 3B: Coaching event created!
-        coaching_count += 1
-        timestamp = cv_frame['timestamp_s']
-        
-        print(f"\n{'='*60}")
-        print(f"[t={timestamp:.1f}s] COACHING EVENT #{coaching_count}")
-        print(f"{'='*60}")
-        print(f"Exercise: {coaching_event['exercise']['name']}")
-        print(f"Mistake: {coaching_event['mistake']['type']}")
-        print(f"Severity: {coaching_event['severity']}")
-        print(f"Duration: {coaching_event['mistake']['duration_seconds']:.1f}s")
-        print(f"Persistence: {coaching_event['mistake']['persistence_rate']:.0%}")
-        print(f"Routing: {coaching_event['tier']} ({coaching_event['routing_reason']})")
-        print()
-        
-        # STEP 3C: Optional LangGraph processing
-        if args.use_langgraph and coaching_graph is not None:
-            print("[LangGraph] Starting orchestration...")
+    try:
+        for i, cv_frame in enumerate(frame_source):
+            if args.max_frames > 0 and i >= args.max_frames:
+                print(f"[Run] Reached --max-frames={args.max_frames}; stopping.")
+                break
 
-            initial_state = {
-                "coaching_event": coaching_event,
-                "session_id": integration_layer.session_id,
-                "coaching_history": integration_layer.coaching_history,
-                "cache": integration_layer.cache,
-                "ground_truth_library": gt_library,
-                "tier": coaching_event.get("tier"),
-                "cache_key": coaching_event.get("cache_key"),
-                "routing_reason": coaching_event.get("routing_reason"),
-            }
+            # STEP 3A: IntegrationLayer preprocessing
+            coaching_event = integration_layer.process_frame(cv_frame)
 
-            final_state = coaching_graph.invoke(initial_state)
+            if coaching_event is None:
+                # No coaching needed this frame
+                if i % 50 == 0:  # Progress indicator
+                    print(f"[Frame {i}] No coaching needed (monitoring...)")
+                continue
 
-            integration_layer.record_coaching_complete(
-                coaching_event,
-                final_state["feedback_audio"],
-                final_state["tier_used"],
-            )
+            # STEP 3B: Coaching event created!
+            coaching_count += 1
+            timestamp = cv_frame['timestamp_s']
 
-            print("[Result] ✅ Coaching delivered")
-            print(f"  Tier: {final_state['tier_used']}")
-            print(f"  Latency: {final_state.get('latency_ms', 0):.0f}ms")
-            if final_state.get("used_fallback"):
-                print(f"  Fallback: {final_state.get('fallback_source', 'unknown')} (ground-truth cue used)")
-            print(f"  Message: \"{final_state['feedback_audio']}\"")
-        else:
-            # Integration-only mode: show exactly what the integration layer emits.
-            integration_layer.record_coaching_complete(
-                coaching_event,
-                response="(integration-only mode)",
-                tier=coaching_event["tier"],
-            )
-            print("[Result] ✅ Integration event emitted (no LangGraph)")
-            print(f"  Event JSON: {json.dumps(coaching_event)}")
-        print()
-    
-    # ==========================================
-    # STEP 4: SESSION SUMMARY
-    # ==========================================
-    
-    print("\n" + "="*60)
-    print("SESSION COMPLETE")
-    print("="*60)
-    
-    summary = integration_layer.get_session_summary()
-    
-    print(f"\nSession ID: {summary['session_id']}")
-    print(f"Duration: {summary['session_duration_seconds']:.1f} seconds")
-    print(f"Total Coaching Events: {summary['total_events']}")
-    print(f"Unique Mistakes Addressed: {len(summary['coached_mistakes'])}")
-    
-    if summary['coached_mistakes']:
-        print("\nMistakes Coached:")
-        for mistake in summary['coached_mistakes']:
-            print(f"  - {mistake}")
-    
-    from collections import Counter
-    
-    # Tier breakdown
-    tier_counts = Counter(entry['tier_used'] for entry in summary['coaching_history'])
-    tier_breakdown = {
-        "tier_1": tier_counts.get("tier_1", 0),
-        "tier_2": tier_counts.get("tier_2", 0),
-        "tier_3": tier_counts.get("tier_3", 0)
-    }
-    
-    print(f"\nTier Breakdown:")
-    print(f"  Tier 1 (Cache): {tier_breakdown['tier_1']}")
-    print(f"  Tier 2 (RAG): {tier_breakdown['tier_2']}")
-    print(f"  Tier 3 (Reasoning): {tier_breakdown['tier_3']}")
-    
-    cache_hit_rate = (tier_breakdown['tier_1'] / summary['total_events'] * 100) if summary['total_events'] > 0 else 0
-    print(f"\nCache Hit Rate: {cache_hit_rate:.0f}%")
+            print(f"\n{'='*60}")
+            print(f"[t={timestamp:.1f}s] COACHING EVENT #{coaching_count}")
+            print(f"{'='*60}")
+            print(f"Exercise: {coaching_event['exercise']['name']}")
+            print(f"Mistake: {coaching_event['mistake']['type']}")
+            print(f"Severity: {coaching_event['severity']}")
+            print(f"Duration: {coaching_event['mistake']['duration_seconds']:.1f}s")
+            print(f"Persistence: {coaching_event['mistake']['persistence_rate']:.0%}")
+            print(f"Routing: {coaching_event['tier']} ({coaching_event['routing_reason']})")
+            print()
 
-    fallback_count = sum(
-        1 for entry in summary.get("coaching_history", [])
-        if entry.get("used_fallback", False)
-    )
-    if summary['total_events'] > 0:
-        fallback_rate = fallback_count / summary['total_events'] * 100
-        print(f"Ground Truth Fallbacks: {fallback_count} ({fallback_rate:.0f}%)")
+            # STEP 3C: Route event to coaching backend
+            if args.session_runner and _session_runner is not None:
+                # ── Full-stack path: SessionRunner (CoachingAgent + ProgressTrackerAgent) ──
+                try:
+                    cue = _session_runner.handle_integration_event(coaching_event)
+                    integration_layer.record_coaching_complete(
+                        coaching_event,
+                        response=cue,
+                        tier=coaching_event.get("tier", "tier_2"),
+                    )
+                    print("[LIVE COACHING CUE]")
+                    print(f"  {cue}")
+                except Exception as e:
+                    print(f"[SessionRunner] Error processing event: {e}")
+                    import traceback
+                    traceback.print_exc()
 
-    print("\n✅ Session complete!")
+            elif args.use_langgraph and coaching_graph is not None:
+                # ── Legacy path: direct LangGraph invocation ──
+                print("[LangGraph] Starting orchestration...")
+
+                initial_state = {
+                    "coaching_event": coaching_event,
+                    "session_id": integration_layer.session_id,
+                    "coaching_history": integration_layer.coaching_history,
+                    "cache": integration_layer.cache,
+                    "ground_truth_library": gt_library,
+                    "tier": coaching_event.get("tier"),
+                    "cache_key": coaching_event.get("cache_key"),
+                    "routing_reason": coaching_event.get("routing_reason"),
+                }
+
+                final_state = coaching_graph.invoke(initial_state)
+
+                integration_layer.record_coaching_complete(
+                    coaching_event,
+                    final_state["feedback_audio"],
+                    final_state["tier_used"],
+                )
+
+                print("[Result] ✅ Coaching delivered")
+                print(f"  Tier: {final_state['tier_used']}")
+                print(f"  Latency: {final_state.get('latency_ms', 0):.0f}ms")
+                if final_state.get("used_fallback"):
+                    print(f"  Fallback: {final_state.get('fallback_source', 'unknown')} (ground-truth cue used)")
+                print(f"  Message: \"{final_state['feedback_audio']}\"")
+
+            else:
+                # ── Integration-only mode: show what the integration layer emits ──
+                integration_layer.record_coaching_complete(
+                    coaching_event,
+                    response="(integration-only mode)",
+                    tier=coaching_event["tier"],
+                )
+                print("[Result] ✅ Integration event emitted (no LangGraph)")
+                print(f"  Event JSON: {json.dumps(coaching_event)}")
+            print()
+
+    except KeyboardInterrupt:
+        print("\n[Session] Ctrl+C received — flushing session...")
+
+    finally:
+        # ==========================================
+        # STEP 4: SESSION SUMMARY (always runs)
+        # ==========================================
+
+        print("\n" + "="*60)
+        print("SESSION COMPLETE")
+        print("="*60)
+
+        summary = integration_layer.get_session_summary()
+
+        print(f"\nSession ID: {summary['session_id']}")
+        print(f"Duration: {summary['session_duration_seconds']:.1f} seconds")
+        print(f"Total Coaching Events: {summary['total_events']}")
+        print(f"Unique Mistakes Addressed: {len(summary['coached_mistakes'])}")
+
+        if summary['coached_mistakes']:
+            print("\nMistakes Coached:")
+            for mistake in summary['coached_mistakes']:
+                print(f"  - {mistake}")
+
+        from collections import Counter
+
+        # Tier breakdown
+        tier_counts = Counter(entry['tier_used'] for entry in summary['coaching_history'])
+        tier_breakdown = {
+            "tier_1": tier_counts.get("tier_1", 0),
+            "tier_2": tier_counts.get("tier_2", 0),
+            "tier_3": tier_counts.get("tier_3", 0)
+        }
+
+        print(f"\nTier Breakdown:")
+        print(f"  Tier 1 (Cache): {tier_breakdown['tier_1']}")
+        print(f"  Tier 2 (RAG): {tier_breakdown['tier_2']}")
+        print(f"  Tier 3 (Reasoning): {tier_breakdown['tier_3']}")
+
+        cache_hit_rate = (tier_breakdown['tier_1'] / summary['total_events'] * 100) if summary['total_events'] > 0 else 0
+        print(f"\nCache Hit Rate: {cache_hit_rate:.0f}%")
+
+        fallback_count = sum(
+            1 for entry in summary.get("coaching_history", [])
+            if entry.get("used_fallback", False)
+        )
+        if summary['total_events'] > 0:
+            fallback_rate = fallback_count / summary['total_events'] * 100
+            print(f"Ground Truth Fallbacks: {fallback_count} ({fallback_rate:.0f}%)")
+
+        # ── SessionRunner end-of-session report ──────────────────────────
+        if args.session_runner and _session_runner is not None:
+            try:
+                print("\n[SessionRunner] Generating end-of-session report...")
+                sr_summary = _session_runner.end_session()
+                print(f"[SessionRunner] Events logged: {sr_summary.get('total_events_logged', 0)}")
+                progress = sr_summary.get("progress_report")
+                if progress and not progress.get("error"):
+                    print(f"\n{'='*60}")
+                    print("PROGRESS REPORT")
+                    print(f"{'='*60}")
+                    print(f"Confidence: {progress.get('confidence_score', 'N/A')}")
+                    print(f"\nCoaching Feedback:\n  {progress.get('coaching_feedback', '')}")
+                    exercises = progress.get("suggested_exercises", [])
+                    if exercises:
+                        print("\nSuggested Exercises for Next Session:")
+                        for ex in exercises:
+                            print(f"  - {ex}")
+                    safety = progress.get("safety_notes", [])
+                    if safety:
+                        print("\nSafety Notes:")
+                        for note in safety:
+                            print(f"  - {note}")
+                    motivational = progress.get("motivational_note", "")
+                    if motivational:
+                        print(f"\nMotivational Note:\n  {motivational}")
+                    sources = progress.get("retrieved_sources", [])
+                    if sources:
+                        print(f"\nSources ({len(sources)}):")
+                        for src in sources:
+                            print(f"  - {src[:80]}{'...' if len(src) > 80 else ''}")
+                    print(f"{'='*60}")
+                elif progress and progress.get("error"):
+                    print(f"[SessionRunner] Progress report error: {progress['error']}")
+            except Exception as e:
+                print(f"[SessionRunner] end_session() failed: {e}")
+
+        print("\n✅ Session complete!")
 
 
 def generate_mock_cv_frames():
@@ -369,6 +454,23 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Relax temporal thresholds for quick live webcam debugging.",
     )
+    ap.add_argument(
+        "--session-runner",
+        action="store_true",
+        help="Route coaching events through SessionRunner (CoachingAgent + ProgressTrackerAgent).",
+    )
+    ap.add_argument(
+        "--patient-id",
+        type=str,
+        default="live_patient",
+        help="Patient ID passed to SessionRunner (default: live_patient).",
+    )
+    ap.add_argument(
+        "--injury",
+        type=str,
+        default="general_rehab",
+        help="Injury/condition label passed to SessionRunner (default: general_rehab).",
+    )
     return ap.parse_args()
 
 
@@ -395,7 +497,12 @@ def iter_cv_output_from_file(filepath: str, follow: bool = False, poll_interval:
             if line:
                 line = line.strip()
                 if line:
-                    yield json.loads(line)
+                    data = json.loads(line)
+                    if data.get("eof"):
+                        # CV stream wrote its EOF sentinel — exit follow loop cleanly
+                        print("[CV] Stream ended (EOF sentinel received)")
+                        return
+                    yield data
                 continue
 
             if not follow:

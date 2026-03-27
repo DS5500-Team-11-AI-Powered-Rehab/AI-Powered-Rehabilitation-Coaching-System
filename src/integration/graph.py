@@ -10,12 +10,11 @@ except ImportError:
     from state import CoachingState
 import time
 
-# Failure strings produced by tier fallbacks — these trigger the quality gate
+# Explicit refusals and exception-fallback sentinel — these trigger the quality gate.
+# Keep patterns narrow: legitimate coaching language must NOT match.
 _KNOWN_FAILURE_PATTERNS = [
     "i apologize", "i'm sorry", "i cannot", "i don't know",
-    "focus on correcting",        # Tier 2 exception fallback
-    "let's focus on correcting",  # Tier 3 exception fallback
-    "maintain proper form",       # Tier 1 cache-miss fallback
+    "[tier_fallback]",  # Sentinel prefix added to all tier exception-fallback strings
     "as an ai", "i am an ai",
 ]
 
@@ -87,7 +86,7 @@ def tier_1_cache_node(state: CoachingState) -> CoachingState:
         print(f"[Tier 1] Cache hit: {cache_key}")
     else:
         # Fallback if cache miss (shouldn't happen with proper routing)
-        state["coaching_response"] = f"Maintain proper form"
+        state["coaching_response"] = f"[TIER_FALLBACK] Maintain proper form"
         state["delivery_timing"] = "immediate"
         print(f"[Tier 1] Cache miss (unexpected): {cache_key}")
     
@@ -209,7 +208,7 @@ Generate a brief coaching cue to correct this mistake:""")
         
     except Exception as e:
         print(f"[Tier 2] LLM generation failed: {e}. Using fallback.")
-        state["coaching_response"] = f"Focus on correcting {mistake_type} - maintain proper form throughout the movement."
+        state["coaching_response"] = f"[TIER_FALLBACK] Focus on correcting {mistake_type} - maintain proper form throughout the movement."
     
     state["delivery_timing"] = "rep_end"
     state["tier_used"] = "tier_2"
@@ -433,7 +432,7 @@ Then synthesize a detailed coaching response (30-50 words) that:
         else:
             state["movement_analysis"] = "Single occurrence of mistake - providing detailed correction"
             state["coaching_response"] = (
-                f"Let's focus on correcting your {mistake_type} in the {exercise}. The key is to "
+                f"[TIER_FALLBACK] Let's focus on correcting your {mistake_type} in the {exercise}. The key is to "
                 f"maintain alignment throughout the movement. Focus on controlled tempo and proper "
                 f"positioning. This will help prevent compensation patterns as you progress."
             )
@@ -632,6 +631,12 @@ def format_feedback_node(state: CoachingState) -> CoachingState:
     tier = state["tier_used"]
     coaching_event = state["coaching_event"]
     
+    # Compute end-to-end latency from pipeline entry (preferred) or tier-internal time
+    pipeline_start = state.get("pipeline_start_time")
+    end_to_end_latency = (
+        (time.time() - pipeline_start) * 1000 if pipeline_start else state.get("latency_ms", 0)
+    )
+
     # Format delivery package
     delivery_package = {
         "message": feedback,
@@ -639,7 +644,7 @@ def format_feedback_node(state: CoachingState) -> CoachingState:
         "tier": tier,
         "timestamp": coaching_event["timestamp"],
         "event_id": coaching_event["event_id"],
-        "latency_ms": state.get("latency_ms", 0),
+        "latency_ms": end_to_end_latency,
         "audio_enabled": state["patient_profile"].get("preferences", {}).get("audio_enabled", True)
     }
     
@@ -650,7 +655,7 @@ def format_feedback_node(state: CoachingState) -> CoachingState:
     print(f"Timing: {timing}")
     print(f"Tier: {tier}")
     print(f"Message: {feedback}")
-    print(f"Latency: {delivery_package['latency_ms']:.0f}ms")
+    print(f"Latency: {end_to_end_latency:.0f}ms")
     print(f"{'='*60}\n")
     
     # Store formatted delivery for output
