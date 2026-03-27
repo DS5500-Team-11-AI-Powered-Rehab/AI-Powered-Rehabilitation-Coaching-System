@@ -11,6 +11,7 @@ Responsibilities
 Everything inside create_coaching_graph() is unchanged.
 """
 
+import time
 from typing import List, Dict
 
 
@@ -96,6 +97,7 @@ class CoachingAgent:
             "session_time_minutes": 0,
         }
 
+        t_start = time.time()
         initial_state = {
             "coaching_event": coaching_event_dict,
             "session_id": event.session_id or "default_session",
@@ -105,13 +107,16 @@ class CoachingAgent:
             "tier": tier,
             "cache_key": None,
             "routing_reason": f"Priority: {event.priority}",
+            "pipeline_start_time": t_start,
         }
 
         final_state = self.graph.invoke(initial_state)
         self._event_counter += 1
 
         cue: str = final_state.get("feedback_audio", "")
-        latency_ms: float = final_state.get("latency_ms", 0.0)
+        # Use total wall-clock time from pipeline entry so this matches the
+        # [FEEDBACK DELIVERY] latency printed by format_feedback_node.
+        latency_ms: float = (time.time() - t_start) * 1000
 
         self.coaching_history.append({
             "timestamp": 0,

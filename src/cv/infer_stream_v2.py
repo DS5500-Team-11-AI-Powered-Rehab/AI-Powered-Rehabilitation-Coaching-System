@@ -401,6 +401,10 @@ def main() -> None:
         cap.release()
         landmarker.close()
         if out_f:
+            # Write EOF sentinel so the integration layer's --follow loop can
+            # detect that the CV stream has ended and exit cleanly.
+            out_f.write('{"eof": true}\n')
+            out_f.flush()
             out_f.close()
         if args.show:
             cv2.destroyAllWindows()
