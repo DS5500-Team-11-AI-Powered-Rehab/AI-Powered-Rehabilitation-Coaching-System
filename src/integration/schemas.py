@@ -63,9 +63,12 @@ def coachable_event_from_integration_json(event_json: dict) -> CoachingEvent:
     exercise = exercise_data.get("name", "") if isinstance(exercise_data, dict) else str(exercise_data)
 
     mistake_data = event_json.get("mistake") or {}
-    mistake_name = mistake_data.get("name") or mistake_data.get("type", "")
-
-    occurrences = mistake_data.get("occurrences", 0) if isinstance(mistake_data, dict) else 0
+    if isinstance(mistake_data, dict):
+        mistake_name = mistake_data.get("name") or mistake_data.get("type", "")
+        occurrences = mistake_data.get("occurrences", 0)
+    else:
+        mistake_name = str(mistake_data)
+        occurrences = 0
 
     quality_score = event_json.get("quality_score", 0.0)
     severity_scores = {mistake_name: quality_score} if mistake_name else {}
