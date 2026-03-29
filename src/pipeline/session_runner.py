@@ -39,6 +39,12 @@ if _MISSING_DEPS is None:
     except ImportError:
         _MISSING_DEPS = "chromadb"
 
+if _MISSING_DEPS is None:
+    try:
+        import langchain_anthropic  # noqa: F401
+    except ImportError:
+        _MISSING_DEPS = "langchain_anthropic"
+
 # ── Internal imports ─────────────────────────────────────────────────────────
 from src.integration.schemas import CoachingEvent, coachable_event_from_integration_json
 
