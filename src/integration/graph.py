@@ -18,6 +18,12 @@ _KNOWN_FAILURE_PATTERNS = [
     "as an ai", "i am an ai",
 ]
 
+
+def _has_failure_pattern(text: str) -> bool:
+    """Return True if text contains known refusal/fallback markers."""
+    text_lower = (text or "").lower()
+    return any(p in text_lower for p in _KNOWN_FAILURE_PATTERNS)
+
 def enrich_context_node(state: CoachingState) -> CoachingState:
     """
     STEP 1: Enrich coaching event with session context
@@ -562,6 +568,7 @@ def quality_gate_node(state: CoachingState) -> CoachingState:
         state["fallback_source"] = None
         return state
 
+    raw_response = state.get("coaching_response", "")
     response = state.get("feedback_audio", "")
     coaching_event = state["coaching_event"]
     exercise = coaching_event["exercise"]["name"]
@@ -582,9 +589,10 @@ def quality_gate_node(state: CoachingState) -> CoachingState:
     response_tokens = set(response.lower().split())
     relevance_ok = bool(context_tokens & response_tokens)
 
-    # Signal 3: No known failure / refusal patterns
-    response_lower = response.lower()
-    refusal_ok = not any(p in response_lower for p in _KNOWN_FAILURE_PATTERNS)
+    # Signal 3: No known failure / refusal patterns.
+    # Check BOTH raw tier output and polished output so the polisher cannot
+    # accidentally remove sentinel text and mask a fallback/refusal.
+    refusal_ok = not (_has_failure_pattern(raw_response) or _has_failure_pattern(response))
 
     quality_score = sum([length_ok, relevance_ok, refusal_ok])
     use_fallback = quality_score < 2
