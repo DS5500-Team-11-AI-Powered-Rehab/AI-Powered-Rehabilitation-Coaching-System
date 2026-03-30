@@ -4,9 +4,12 @@ Handles: Aggregation + Memory + Routing + Cache Management
 """
 
 from collections import deque
-from typing import Optional, Dict, List, Set
+from typing import Optional, Dict, List
 from statistics import mean
+import json
+import re
 import time
+from pathlib import Path
 
 try:
     import diskcache
@@ -28,7 +31,8 @@ class Config:
     
     # Deduplication
     MIN_COACHING_INTERVAL = 10   # Seconds between any coaching feedbacks
-    RE_COACHING_THRESHOLD = 20   # Re-coach if persists 20+ seconds after first coaching
+    RE_COACHING_THRESHOLD = 45   # Re-coach if persists 45+ seconds after last coaching
+    RE_COACHING_TIER3_COUNT = 3  # Escalate to Tier 3 after this many coaching attempts
     
     # Everity Classification
     CRITICAL_KEYWORDS = [
@@ -110,30 +114,37 @@ class ResponseCache:
             return list(self.cache.iterkeys())
         return list(self.cache.keys())
     
-    def populate_defaults(self):
+    def populate_defaults(self, cache_file: str = "cache/tier1_defaults.json"):
         """
-        Populate cache with common patterns
-        Call this once during initialization
-        
-        TODO: Add your top 20 common mistake patterns here
+        Populate cache with common patterns from pre-built cache file.
+        Falls back to a small set of hardcoded defaults if the file is missing.
+
+        Generate the cache file with:  python scripts/build_tier1_cache.py
         """
-        defaults = {
-            "heel_lift_not_moving_up": {
+        path = Path(cache_file)
+        if path.exists():
+            with open(path) as f:
+                defaults = json.load(f)
+            for key, data in defaults.items():
+                self.set(key, data["response"], data.get("timing", "rep_end"))
+            return
+
+        # Fallback hardcoded defaults
+        fallback = {
+            "heel_lift__not_moving_up": {
                 "response": "Pause - are you experiencing any pain? Stop if uncomfortable.",
                 "timing": "immediate"
             },
-            "squat_knee_valgus": {
+            "squat__knee_valgus": {
                 "response": "Push your knees outward over your toes.",
                 "timing": "immediate"
             },
-            "jumping_jacks_incomplete_arm_raise": {
+            "jumping_jacks__incomplete_arm_raise": {
                 "response": "Raise your arms fully overhead on each jump.",
                 "timing": "rep_end"
             },
-            # TODO: Add more patterns as you discover them
         }
-        
-        for key, data in defaults.items():
+        for key, data in fallback.items():
             self.set(key, data["response"], data["timing"])
 
 
@@ -151,22 +162,25 @@ class IntegrationLayer:
                 # Send to LangGraph...
     """
     
-    def __init__(self, session_id: str, config: Config = None):
+    def __init__(self, session_id: str, config: Config = None, gt_library=None):
         """Initialize integration layer for a session"""
         self.session_id = session_id
         self.config = config or Config()
-        
+
         # Aggregation State
         self.frame_buffer = deque(maxlen=self.config.WINDOW_SIZE_FRAMES)
         self.event_counter = 0
-        
+
         # Memory State
-        self.coached_mistakes = set()  # Mistake types we've addressed
+        self.coached_mistakes: Dict[str, dict] = {}  # {type: {count, first_coached, last_coached}}
         self.coaching_history = []     # Full history with timestamps
         self.last_coaching_time = -1000  # Initialize to large negative value (never coached before)
-        
+
         # Cache Memory
         self.cache = ResponseCache(self.config.CACHE_DIR)
+
+        # Ground-truth library for dynamic cache promotion
+        self.gt_library = gt_library
     
     
     def process_frame(self, cv_frame: Dict) -> Optional[Dict]:
@@ -310,25 +324,18 @@ class IntegrationLayer:
     def _should_re_coach(self, mistake_type: str, current_time: float) -> bool:
         """
         Re-coaching Logic
-        
-        If same mistake persists 20+ seconds after first coaching:
-        → Re-coach with escalation
+
+        If same mistake persists RE_COACHING_THRESHOLD seconds after the
+        *last* coaching (not the first), allow re-coaching.  Using
+        last_coached instead of first_coached resets the window each time
+        the patient receives feedback, giving them time to correct.
         """
-        first_coached = next(
-            (entry for entry in self.coaching_history 
-             if entry['mistake_type'] == mistake_type),
-            None
-        )
-        
-        if not first_coached:
+        entry = self.coached_mistakes.get(mistake_type)
+        if not entry:
             return False
-        
-        time_since_coaching = current_time - first_coached['timestamp']
-        
-        if time_since_coaching >= self.config.RE_COACHING_THRESHOLD:
-            return True
-        
-        return False
+
+        time_since_last = current_time - entry['last_coached']
+        return time_since_last >= self.config.RE_COACHING_THRESHOLD
     
     def _select_top_priority(self, mistakes: List[Dict]) -> Dict:
         """
@@ -443,24 +450,28 @@ class IntegrationLayer:
     def _route_to_tier(self, coaching_event: Dict) -> Dict:
         """
         Tier Routing Decision
-        
+
         Decision tree:
-        1. IF in cache AND not re-coaching → TIER 1 (50ms)
-        2. ELIF high/medium severity → TIER 2 (1-2s)
-        3. ELIF complex pattern OR re-coaching → TIER 3 (3-5s)
-        4. ELSE → TIER 2 (default)
-        
+        1. IF in cache AND not heavily re-coached → TIER 1 (50ms)
+        2. IF coached 3+ times AND still re-coaching → TIER 3 (3-5s)
+           OR genuinely complex + high severity → TIER 3
+        3. ELSE → TIER 2 (default, including early re-coaching)
+
         Returns dict with: {"tier", "cache_key", "routing_reason"}
         """
-        
+
         exercise = coaching_event['exercise']['name']
         mistake = coaching_event['mistake']['type']
         severity = coaching_event['severity']
         is_recoaching = coaching_event['is_recoaching']
-        
+
+        # How many times has this mistake been coached?
+        coaching_entry = self.coached_mistakes.get(mistake)
+        coaching_count = coaching_entry['count'] if coaching_entry else 0
+
         # Generate cache key
         cache_key = self._make_cache_key(exercise, mistake)
-        
+
         # === TIER 1: Cached responses ===
         if self.cache.has(cache_key) and not is_recoaching:
             return {
@@ -468,61 +479,96 @@ class IntegrationLayer:
                 "cache_key": cache_key,
                 "routing_reason": "Common mistake with cached response"
             }
-        
-        # === TIER 3: Complex situations ===
-        if is_recoaching or self._is_complex_pattern(coaching_event):
+
+        # === TIER 1 (dynamic): Ground-truth library promotion ===
+        if self.gt_library and not is_recoaching:
+            gt_cue = self.gt_library.lookup(exercise, mistake)
+            if gt_cue:
+                self.cache.set(cache_key, gt_cue, "rep_end")
+                return {
+                    "tier": "tier_1",
+                    "cache_key": cache_key,
+                    "routing_reason": "Ground-truth match promoted to cache"
+                }
+
+        # === TIER 3: Escalation after repeated coaching failure ===
+        escalated = (
+            is_recoaching
+            and coaching_count >= self.config.RE_COACHING_TIER3_COUNT
+        )
+        complex_and_severe = (
+            self._is_complex_pattern(coaching_event)
+            and severity == "high"
+        )
+        if escalated or complex_and_severe:
             return {
                 "tier": "tier_3",
                 "cache_key": None,
                 "routing_reason": (
-                    "Re-coaching situation" if is_recoaching 
+                    f"Re-coaching escalation (coached {coaching_count}x)"
+                    if escalated
                     else "Complex pattern requiring full reasoning"
                 )
             }
-        
-        # === TIER 2: Standard RAG + LLM ===
+
+        # === TIER 2: Standard RAG + LLM (default) ===
+        reason = f"{severity} severity mistake needs RAG context"
+        if is_recoaching:
+            reason = f"Re-coaching ({coaching_count}x, below escalation threshold)"
         return {
             "tier": "tier_2",
             "cache_key": None,
-            "routing_reason": f"{severity} severity mistake needs RAG context"
+            "routing_reason": reason
         }
     
     def _is_complex_pattern(self, coaching_event: Dict) -> bool:
         """
         Complex Pattern Detection
-        
+
         Indicators:
-        - Very low quality score (<0.3)
-        - High persistence (>60%) but low confidence (<0.5)
+        - Truly degraded video quality (<0.15) — real CV data often sits 0.2-0.35
+        - High persistence (>60%) but low confidence (<0.5) — contradictory signal
         """
         quality = coaching_event['quality_score']
         persistence = coaching_event['mistake']['persistence_rate']
         confidence = coaching_event['mistake']['confidence']
-        
+
         return (
-            quality < 0.3 or
+            quality < 0.15 or
             (persistence > 0.6 and confidence < 0.5)
         )
     
     def _make_cache_key(self, exercise: str, mistake: str) -> str:
         """
-        Generate cache key: "exercise_mistake_type"
-        Example: "heel_lift_not_moving_up"
+        Generate cache key: "exercise__mistake_type"
+        Uses double-underscore separator to match GroundTruthLibrary._make_key
+        and avoid collisions with multi-word names.
         """
-        return f"{exercise}_{mistake}".replace(" ", "_").replace("-", "_").lower()
+        def norm(s: str) -> str:
+            return re.sub(r"[^a-z0-9]+", "_", s.lower().strip()).strip("_")
+        return f"{norm(exercise)}__{norm(mistake)}"
     
     def _record_coaching_intent(self, coaching_event: Dict):
         """
         RECORD that we're about to coach on this mistake
-        
+
         Update:
-        - coached_mistakes set (for deduplication)
+        - coached_mistakes dict (for deduplication + escalation tracking)
         - last_coaching_time (for cooldown)
         """
         mistake_type = coaching_event['mistake']['type']
         timestamp = coaching_event['timestamp']
-        
-        self.coached_mistakes.add(mistake_type)
+
+        if mistake_type in self.coached_mistakes:
+            entry = self.coached_mistakes[mistake_type]
+            entry['count'] += 1
+            entry['last_coached'] = timestamp
+        else:
+            self.coached_mistakes[mistake_type] = {
+                'count': 1,
+                'first_coached': timestamp,
+                'last_coached': timestamp,
+            }
         self.last_coaching_time = timestamp
     
     def record_coaching_complete(self, coaching_event: Dict, 
@@ -576,7 +622,7 @@ class IntegrationLayer:
         return {
             'session_id': self.session_id,
             'total_events': self.event_counter,
-            'coached_mistakes': list(self.coached_mistakes),
+            'coached_mistakes': list(self.coached_mistakes.keys()),
             'coaching_history': self.coaching_history,
             'session_duration_seconds': duration_seconds
         }

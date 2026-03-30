@@ -130,7 +130,15 @@ class SessionRunner:
         """
         event: CoachingEvent = coachable_event_from_integration_json(event_json)
 
-        cue, latency_ms = self._coaching_agent.handle_event(event)
+        # Forward integration layer routing info so the graph respects it
+        routing_override = {
+            "tier": event_json.get("tier"),
+            "cache_key": event_json.get("cache_key"),
+            "routing_reason": event_json.get("routing_reason"),
+        }
+        cue, latency_ms = self._coaching_agent.handle_event(
+            event, routing_override=routing_override
+        )
 
         event.coaching_latency_ms = latency_ms
         self._log_event(event)

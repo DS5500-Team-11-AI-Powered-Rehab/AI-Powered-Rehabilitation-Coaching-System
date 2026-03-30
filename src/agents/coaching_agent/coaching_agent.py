@@ -25,16 +25,17 @@ class CoachingAgent:
         cue = agent.handle_event(event)   # event: CoachingEvent
     """
 
-    def __init__(self, ground_truth_library=None):
+    def __init__(self, ground_truth_library=None, cache=None):
         from src.integration.graph import create_coaching_graph
         self.graph = create_coaching_graph()
         self.coaching_history: List[Dict] = []
         self._event_counter: int = 0
         self.ground_truth_library = ground_truth_library
+        self.cache = cache
 
     # ── Public API ───────────────────────────────────────────────────────────
 
-    def handle_event(self, event) -> tuple:
+    def handle_event(self, event, routing_override=None) -> tuple:
         """
         Translate a CoachingEvent dataclass into graph state and invoke the graph.
 
@@ -42,6 +43,9 @@ class CoachingAgent:
         ----------
         event : CoachingEvent
             Produced by EventProcessor.
+        routing_override : dict, optional
+            When coming from the integration layer, this carries the pre-computed
+            tier, cache_key, and routing_reason so we don't re-determine them.
 
         Returns
         -------
@@ -55,12 +59,6 @@ class CoachingAgent:
             raise TypeError(f"Expected CoachingEvent, got {type(event)}")
 
         # ── Map CoachingEvent → coaching_event dict expected by the graph ──
-        # The graph reads: coaching_event["exercise"]["name"]
-        #                  coaching_event["mistake"]["type"]
-        #                  coaching_event["severity"]
-        #                  coaching_event["tier"]
-        #                  coaching_event["cache_key"]
-        #                  coaching_event["routing_reason"]
 
         mistake_type = (
             event.persistent_mistakes[0] if event.persistent_mistakes else "unknown"
@@ -72,8 +70,16 @@ class CoachingAgent:
             "medium" if event.priority == "form"         else
             "low"
         )
-        # Safety issues → tier_3 (full reasoning); form/optimization → tier_2 (RAG)
-        tier = "tier_3" if event.priority == "safety" else "tier_2"
+
+        # Use integration layer routing when available, else fallback
+        if routing_override and routing_override.get("tier"):
+            tier = routing_override["tier"]
+            cache_key = routing_override.get("cache_key")
+            routing_reason = routing_override.get("routing_reason", f"Priority: {event.priority}")
+        else:
+            tier = "tier_3" if event.priority == "safety" else "tier_2"
+            cache_key = None
+            routing_reason = f"Priority: {event.priority}"
 
         coaching_event_dict = {
             "event_id": f"{event.session_id}_event_{self._event_counter}",
@@ -102,11 +108,11 @@ class CoachingAgent:
             "coaching_event": coaching_event_dict,
             "session_id": event.session_id or "default_session",
             "coaching_history": self.coaching_history,
-            "cache": None,
+            "cache": self.cache,
             "ground_truth_library": self.ground_truth_library,
             "tier": tier,
-            "cache_key": None,
-            "routing_reason": f"Priority: {event.priority}",
+            "cache_key": cache_key,
+            "routing_reason": routing_reason,
             "pipeline_start_time": t_start,
         }
 
