@@ -10,19 +10,14 @@ except ImportError:
     from state import CoachingState
 import time
 
-# Explicit refusals and exception-fallback sentinel — these trigger the quality gate.
-# Keep patterns narrow: legitimate coaching language must NOT match.
+# Failure strings produced by tier fallbacks — these trigger the quality gate
 _KNOWN_FAILURE_PATTERNS = [
     "i apologize", "i'm sorry", "i cannot", "i don't know",
-    "[tier_fallback]",  # Sentinel prefix added to all tier exception-fallback strings
+    "focus on correcting",        # Tier 2 exception fallback
+    "let's focus on correcting",  # Tier 3 exception fallback
+    "maintain proper form",       # Tier 1 cache-miss fallback
     "as an ai", "i am an ai",
 ]
-
-
-def _has_failure_pattern(text: str) -> bool:
-    """Return True if text contains known refusal/fallback markers."""
-    text_lower = (text or "").lower()
-    return any(p in text_lower for p in _KNOWN_FAILURE_PATTERNS)
 
 def enrich_context_node(state: CoachingState) -> CoachingState:
     """
@@ -92,7 +87,7 @@ def tier_1_cache_node(state: CoachingState) -> CoachingState:
         print(f"[Tier 1] Cache hit: {cache_key}")
     else:
         # Fallback if cache miss (shouldn't happen with proper routing)
-        state["coaching_response"] = f"[TIER_FALLBACK] Maintain proper form"
+        state["coaching_response"] = f"Maintain proper form"
         state["delivery_timing"] = "immediate"
         print(f"[Tier 1] Cache miss (unexpected): {cache_key}")
     
@@ -128,23 +123,18 @@ def tier_2_rag_node(state: CoachingState) -> CoachingState:
     try:
         import chromadb
         from chromadb.utils import embedding_functions
-
-        # Initialize ChromaDB client (coaching agent's vector store)
-        chroma_client = chromadb.PersistentClient(path="./src/agents/coaching_agent/chroma_coaching_db")
-
-        # Suppress harmless BERT model loading warnings (position_ids mismatch is safe)
-        import logging
-        logging.getLogger("transformers.modeling_utils").setLevel(logging.ERROR)
-        logging.getLogger("transformers.utils.hub").setLevel(logging.ERROR)
-
+        
+        # Initialize ChromaDB client
+        chroma_client = chromadb.PersistentClient(path="./chroma_db")
+        
         # Use sentence-transformers for embeddings
         embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
             model_name="all-MiniLM-L6-v2"
         )
         
-        # Get or create collection (collection is named "langchain" in the coaching agent's vector store)
+        # Get or create collection
         collection = chroma_client.get_or_create_collection(
-            name="langchain",
+            name="pt_guidelines",
             embedding_function=embedding_fn
         )
         
@@ -214,7 +204,7 @@ Generate a brief coaching cue to correct this mistake:""")
         
     except Exception as e:
         print(f"[Tier 2] LLM generation failed: {e}. Using fallback.")
-        state["coaching_response"] = f"[TIER_FALLBACK] Focus on correcting {mistake_type} - maintain proper form throughout the movement."
+        state["coaching_response"] = f"Focus on correcting {mistake_type} - maintain proper form throughout the movement."
     
     state["delivery_timing"] = "rep_end"
     state["tier_used"] = "tier_2"
@@ -257,23 +247,18 @@ def tier_3_reasoning_node(state: CoachingState) -> CoachingState:
     try:
         import chromadb
         from chromadb.utils import embedding_functions
-
-        # Initialize ChromaDB client (coaching agent's vector store)
-        chroma_client = chromadb.PersistentClient(path="./src/agents/coaching_agent/chroma_coaching_db")
-
-        # Suppress harmless BERT model loading warnings (position_ids mismatch is safe)
-        import logging
-        logging.getLogger("transformers.modeling_utils").setLevel(logging.ERROR)
-        logging.getLogger("transformers.utils.hub").setLevel(logging.ERROR)
-
+        
+        # Initialize ChromaDB client
+        chroma_client = chromadb.PersistentClient(path="./chroma_db")
+        
         # Use sentence-transformers for embeddings
         embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
             model_name="all-MiniLM-L6-v2"
         )
-
-        # Get or create collection (collection is named "langchain" in the coaching agent's vector store)
+        
+        # Get or create collection
         collection = chroma_client.get_or_create_collection(
-            name="langchain",
+            name="pt_guidelines",
             embedding_function=embedding_fn
         )
         
@@ -361,17 +346,19 @@ def tier_3_reasoning_node(state: CoachingState) -> CoachingState:
     # === STEP 3: Agent with Chain-of-Thought Reasoning ===
     try:
         from langchain_anthropic import ChatAnthropic
-        from langchain.agents import create_agent
-        from langchain_core.messages import HumanMessage
-
+        from langchain.agents import create_tool_calling_agent, AgentExecutor
+        from langchain_core.prompts import ChatPromptTemplate
+        
         # Initialize Claude Sonnet 4 with tool use
         llm = ChatAnthropic(
             model="claude-sonnet-4-20250514",
             max_tokens=500,
             temperature=0.4
         )
-
-        system_prompt = """You are an expert physical therapy movement analysis agent.
+        
+        # Create agent prompt
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", """You are an expert physical therapy movement analysis agent. 
 Your role is to perform chain-of-thought reasoning to understand WHY a patient is making a mistake and provide detailed, actionable coaching.
 
 Available context:
@@ -388,29 +375,43 @@ Then synthesize a detailed coaching response (30-50 words) that:
 - Explains the root cause of the mistake
 - Provides specific correction cues
 - Offers encouragement and context
-- Suggests modifications if appropriate"""
+- Suggests modifications if appropriate"""),
+            ("user", """Physical Therapy Guidelines:
+{context}
 
-        # Create agent (LangChain 1.x unified API — returns a compiled graph directly)
-        agent = create_agent(llm, tools, system_prompt=system_prompt)
+Current Situation:
+- Exercise: {exercise}
+- Mistake: {mistake_type}
+- Severity: {severity}
+- Patient: {patient_name}, Age {patient_age}
 
+Recent coaching history: {history_summary}
+
+Perform your analysis and generate a detailed coaching response."""),
+            ("placeholder", "{agent_scratchpad}")
+        ])
+        
+        # Create agent
+        agent = create_tool_calling_agent(llm, tools, prompt)
+        agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=False, max_iterations=3)
+        
         # Prepare context
         context = "\n\n".join(retrieved_docs[:5])
         history_summary = f"{len(coaching_history)} events in session" if coaching_history else "First event in session"
-
-        user_message = (
-            f"Physical Therapy Guidelines:\n{context}\n\n"
-            f"Current Situation:\n"
-            f"- Exercise: {exercise}\n"
-            f"- Mistake: {mistake_type}\n"
-            f"- Severity: {severity}\n"
-            f"- Patient: {patient_profile.get('name', 'Patient')}, Age {patient_profile.get('age', 'unknown')}\n\n"
-            f"Recent coaching history: {history_summary}\n\n"
-            f"Perform your analysis and generate a detailed coaching response."
-        )
-
-        # Run agent and extract the last message content
-        result = agent.invoke({"messages": [HumanMessage(content=user_message)]})
-        agent_output = result["messages"][-1].content
+        
+        # Run agent
+        result = agent_executor.invoke({
+            "context": context,
+            "exercise": exercise,
+            "mistake_type": mistake_type,
+            "severity": severity,
+            "patient_name": patient_profile.get("name", "Patient"),
+            "patient_age": patient_profile.get("age", "unknown"),
+            "history_summary": history_summary
+        })
+        
+        # Extract response
+        agent_output = result.get("output", "")
         state["movement_analysis"] = f"Agent reasoning completed with {len(tools)} tools"
         state["coaching_response"] = agent_output
         
@@ -438,7 +439,7 @@ Then synthesize a detailed coaching response (30-50 words) that:
         else:
             state["movement_analysis"] = "Single occurrence of mistake - providing detailed correction"
             state["coaching_response"] = (
-                f"[TIER_FALLBACK] Let's focus on correcting your {mistake_type} in the {exercise}. The key is to "
+                f"Let's focus on correcting your {mistake_type} in the {exercise}. The key is to "
                 f"maintain alignment throughout the movement. Focus on controlled tempo and proper "
                 f"positioning. This will help prevent compensation patterns as you progress."
             )
@@ -568,7 +569,6 @@ def quality_gate_node(state: CoachingState) -> CoachingState:
         state["fallback_source"] = None
         return state
 
-    raw_response = state.get("coaching_response", "")
     response = state.get("feedback_audio", "")
     coaching_event = state["coaching_event"]
     exercise = coaching_event["exercise"]["name"]
@@ -589,10 +589,9 @@ def quality_gate_node(state: CoachingState) -> CoachingState:
     response_tokens = set(response.lower().split())
     relevance_ok = bool(context_tokens & response_tokens)
 
-    # Signal 3: No known failure / refusal patterns.
-    # Check BOTH raw tier output and polished output so the polisher cannot
-    # accidentally remove sentinel text and mask a fallback/refusal.
-    refusal_ok = not (_has_failure_pattern(raw_response) or _has_failure_pattern(response))
+    # Signal 3: No known failure / refusal patterns
+    response_lower = response.lower()
+    refusal_ok = not any(p in response_lower for p in _KNOWN_FAILURE_PATTERNS)
 
     quality_score = sum([length_ok, relevance_ok, refusal_ok])
     use_fallback = quality_score < 2
@@ -639,12 +638,6 @@ def format_feedback_node(state: CoachingState) -> CoachingState:
     tier = state["tier_used"]
     coaching_event = state["coaching_event"]
     
-    # Compute end-to-end latency from pipeline entry (preferred) or tier-internal time
-    pipeline_start = state.get("pipeline_start_time")
-    end_to_end_latency = (
-        (time.time() - pipeline_start) * 1000 if pipeline_start else state.get("latency_ms", 0)
-    )
-
     # Format delivery package
     delivery_package = {
         "message": feedback,
@@ -652,7 +645,7 @@ def format_feedback_node(state: CoachingState) -> CoachingState:
         "tier": tier,
         "timestamp": coaching_event["timestamp"],
         "event_id": coaching_event["event_id"],
-        "latency_ms": end_to_end_latency,
+        "latency_ms": state.get("latency_ms", 0),
         "audio_enabled": state["patient_profile"].get("preferences", {}).get("audio_enabled", True)
     }
     
@@ -663,7 +656,7 @@ def format_feedback_node(state: CoachingState) -> CoachingState:
     print(f"Timing: {timing}")
     print(f"Tier: {tier}")
     print(f"Message: {feedback}")
-    print(f"Latency: {end_to_end_latency:.0f}ms")
+    print(f"Latency: {delivery_package['latency_ms']:.0f}ms")
     print(f"{'='*60}\n")
     
     # Store formatted delivery for output

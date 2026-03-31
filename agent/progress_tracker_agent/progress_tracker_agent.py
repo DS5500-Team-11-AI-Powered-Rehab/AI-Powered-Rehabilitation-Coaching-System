@@ -10,11 +10,11 @@ from typing import Optional
 from langchain_ollama import OllamaLLM
 from langchain_core.output_parsers import StrOutputParser
 
-from .schemas import (
-    PatientContext, CoachingOutput, RehabPhase, make_sample_context
+from schemas import PatientContext, ProgressOutput, RehabPhase, make_sample_context
+    PatientContext, ProgressOutput, RehabPhase, make_sample_context
 )
-from .rag_retriever import CoachingKnowledgeBase
-from .prompts import (
+from rag_retriever import ProgressKnowledgeBase
+from prompts import (
     COACHING_PROMPT_FLAT, POLISH_PROMPT,
     build_rag_query, format_exercise_history
 )
@@ -30,7 +30,7 @@ class ProgressTrackerAgent:
 
     def __init__(
         self,
-        knowledge_base: CoachingKnowledgeBase,
+        knowledge_base: ProgressKnowledgeBase,
         ollama_model: str = "gemma3:4b",
         ollama_base_url: str = "http://localhost:11434",
         retrieval_k: int = 3,           # Keep low to avoid memory pressure
@@ -58,7 +58,7 @@ class ProgressTrackerAgent:
 
     # ── Main entry point ─────────────────────────────────────────────────────
 
-    def generate_progress_report(self, context: PatientContext) -> CoachingOutput:
+    def generate_progress_report(self, context: PatientContext) -> ProgressOutput:
         """
         Full pipeline: receive context → retrieve → generate → polish → return.
         """
@@ -96,7 +96,7 @@ class ProgressTrackerAgent:
             if self.verbose:
                 print(f"[4/4] Skipping polish (short response or disabled)")
 
-        # Step 5: Parse output into structured CoachingOutput
+        # Step 5: Parse output into structured ProgressOutput
         output = self._parse_output(polished, context, sources)
         
         elapsed = time.time() - start
@@ -165,16 +165,16 @@ class ProgressTrackerAgent:
             print(f"  Polish error (using raw): {e}")
             return raw_response
 
-    # ── Step 5: Parse into CoachingOutput ────────────────────────────────────
+    # ── Step 5: Parse into ProgressOutput ────────────────────────────────────
 
     def _parse_output(
         self, 
         text: str, 
         context: PatientContext, 
         sources: list
-    ) -> CoachingOutput:
+    ) -> ProgressOutput:
         """
-        Parse the LLM text output into structured CoachingOutput.
+        Parse the LLM text output into structured ProgressOutput.
         Extracts exercises, safety notes, and motivation where possible.
         """
         
@@ -209,7 +209,7 @@ class ProgressTrackerAgent:
         # Rough confidence: based on response length and source count
         confidence = min(0.9, 0.5 + (len(text) / 1000) * 0.2 + len(sources) * 0.1)
 
-        return CoachingOutput(
+        return ProgressOutput(
             patient_id=context.patient_id,
             coaching_feedback=text,
             suggested_exercises=suggested_exercises,
@@ -239,7 +239,7 @@ def run_demo():
     print("Initialising Coaching Agent Demo...\n")
 
     # Load knowledge base (will use existing DB if available)
-    kb = CoachingKnowledgeBase(
+    kb = ProgressKnowledgeBase(
         data_dir="dataset/clean",
         persist_dir="./chroma_coaching_db",
     ).load_or_build()

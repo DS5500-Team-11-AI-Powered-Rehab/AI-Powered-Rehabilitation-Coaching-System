@@ -1,7 +1,0 @@
-# Git LFS tracking for Chroma database files
-*.sqlite3 filter=lfs diff=lfs merge=lfs -text
-data_level0.bin filter=lfs diff=lfs merge=lfs -text
-src/agents/coaching_agent/chroma_coaching_db/92db5da3-491e-4acf-866a-086f3f30f65e/data_level0.bin filter=lfs diff=lfs merge=lfs -text
-src/agents/coaching_agent/chroma_coaching_db/chroma.sqlite3 filter=lfs diff=lfs merge=lfs -text
-src/agents/progress_tracker_agent/chroma_coaching_db/92db5da3-491e-4acf-866a-086f3f30f65e/data_level0.bin filter=lfs diff=lfs merge=lfs -text
-src/agents/progress_tracker_agent/chroma_coaching_db/chroma.sqlite3 filter=lfs diff=lfs merge=lfs -text
