@@ -1,0 +1,84 @@
+{
+  "phase_summary": {
+    "patient_id": "P001",
+    "condition": "knee osteoarthritis",
+    "rehab_phase": "mid",
+    "pain_level": 4,
+    "weeks_into_rehab": 10,
+    "goals": "Walk dog 30 minutes daily without pain",
+    "phase_start_ts": 1774970784.44,
+    "phase_end_ts": 1774971025.9,
+    "phase_duration_s": 241.46
+  },
+  "exercises": [
+    {
+      "exercise_name": "Mini Squat",
+      "event_count": 6,
+      "quality_scores": [
+        0.28,
+        0.31,
+        0.35,
+        0.4,
+        0.44,
+        0.5
+      ],
+      "avg_quality": 0.38,
+      "quality_trend": "improving",
+      "mistakes": [
+        {
+          "type": "knee valgus",
+          "occurrences": 124,
+          "avg_duration_s": 3.5,
+          "avg_persistence": 0.4,
+          "severity": "low"
+        }
+      ],
+      "ok_aspects": [
+        "Good movement speed maintained throughout",
+        "Consistent squat depth achieved",
+        "Torso rotation well controlled"
+      ],
+      "exercise_feedback": "Exercise complete. Focus on form correction next set. (LLM error: [WinError 10061] 由于目标计算机积极拒绝，无法连接。)"
+    },
+    {
+      "exercise_name": "Leg Press",
+      "event_count": 6,
+      "quality_scores": [
+        0.55,
+        0.52,
+        0.58,
+        0.56,
+        0.6,
+        0.62
+      ],
+      "avg_quality": 0.57,
+      "quality_trend": "stable",
+      "mistakes": [
+        {
+          "type": "forward lean",
+          "occurrences": 83,
+          "avg_duration_s": 3.5,
+          "avg_persistence": 0.4,
+          "severity": "low"
+        }
+      ],
+      "ok_aspects": [
+        "Good movement speed maintained throughout",
+        "Consistent squat depth achieved",
+        "Torso rotation well controlled"
+      ],
+      "exercise_feedback": "Exercise complete. Focus on form correction next set. (LLM error: [WinError 10061] 由于目标计算机积极拒绝，无法连接。)"
+    }
+  ],
+  "phase_pain_trend": [
+    4,
+    4
+  ],
+  "overall_quality_trend": "improving",
+  "next_phase_focus": [
+    "Correct knee valgus in next phase",
+    "Correct forward lean in next phase"
+  ],
+  "phase_report": "Session complete. Good work today. Please review your exercises for next session. (LLM error: [WinError 10061] 由于目标计算机积极拒绝，无法连接。)",
+  "exported_at": "2026-03-31T15:30:31.628394Z"
+}
