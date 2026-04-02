@@ -11,8 +11,8 @@ import argparse
 from pathlib import Path
 import sys
 
-# Add src to path
-sys.path.insert(0, '/Users/davidryan/Documents_Local/GitHub/AI-Powered-Rehabilitation-Coaching-System/src')
+# Add src to path (use relative path from this file)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
 
 from integration.integration_layer import Config
 
