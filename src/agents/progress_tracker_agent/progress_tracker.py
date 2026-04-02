@@ -10,7 +10,16 @@ from pathlib import Path
 from typing import List, Dict
 from datetime import datetime
 
-from langchain_ollama import OllamaLLM
+try:
+    from langchain_ollama import OllamaLLM
+except ModuleNotFoundError:
+    class OllamaLLM:  # type: ignore[override]
+        def __init__(self, *args, **kwargs):
+            raise ModuleNotFoundError(
+                "langchain_ollama is required for ProgressTracker report generation. "
+                "Install it with: pip install langchain-ollama"
+            )
+
 from langchain_core.output_parsers import StrOutputParser
 
 
