@@ -15,6 +15,9 @@ import threading
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+from utils.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 # ── Path setup: import from progress_tracker_agent ───────────────────────────
 # Add src/agents/ to sys.path so progress_tracker_agent can be imported
