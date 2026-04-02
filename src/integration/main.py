@@ -5,6 +5,9 @@ import gzip
 import json
 import time
 from pathlib import Path
+from utils.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 try:
     from .integration_layer import IntegrationLayer, Config
@@ -30,16 +33,15 @@ def main():
        c. Record completion
     """
     
-    print("="*60)
-    print("AI Rehabilitation Coaching System")
-    print("="*60)
-    print()
+    logger.info("="*60)
+    logger.info("AI Rehabilitation Coaching System")
+    logger.info("="*60)
     
     # ==========================================
     # STEP 1: INITIALIZATION
     # ==========================================
     
-    print("[Setup] Initializing components...")
+    logger.info("Initializing components...")
     args = parse_args()
     
     # Initialize config
@@ -69,29 +71,29 @@ def main():
     )
     
     # Initialize ground-truth fallback library
-    print("[Setup] Loading ground-truth coaching library...")
+    logger.info("[Setup] Loading ground-truth coaching library...")
     gt_library_path = "data/ground_truth_coaching_cues.json"
     gt_library = GroundTruthLibrary(gt_library_path)
-    print(f"[Setup] Ground-truth library: {len(gt_library)} pairs loaded")
+    logger.info(f"[Setup] Ground-truth library: {len(gt_library)} pairs loaded")
 
     # Populate cache with default patterns
-    print("[Setup] Populating Tier 1 cache...")
+    logger.info("[Setup] Populating Tier 1 cache...")
     integration_layer.cache.populate_defaults()
     cached_patterns = integration_layer.list_cached_patterns()
-    print(f"[Setup] Cached {len(cached_patterns)} common patterns")
+    logger.info(f"[Setup] Cached {len(cached_patterns)} common patterns")
 
-    print("[Setup] ✅ Core components ready!\n")
+    logger.info("[Setup] ✅ Core components ready!\n")
 
     # ==========================================
     # STEP 2: LOAD CV OUTPUT
     # ==========================================
 
-    print("[CV] Loading CV output stream...")
+    logger.info("[CV] Loading CV output stream...")
 
     if args.cv_jsonl:
-        print(f"[CV] Source: {args.cv_jsonl}")
+        logger.info(f"[CV] Source: {args.cv_jsonl}")
         if args.follow:
-            print("[CV] Mode: live follow (waiting for appended frames)")
+            logger.info("[CV] Mode: live follow (waiting for appended frames)")
             frame_source = iter_cv_output_from_file(
                 filepath=args.cv_jsonl,
                 follow=True,
@@ -101,46 +103,46 @@ def main():
             cv_frames = load_cv_output_from_file(args.cv_jsonl)
             if args.max_frames > 0:
                 cv_frames = cv_frames[:args.max_frames]
-            print(f"[CV] Loaded {len(cv_frames)} frames")
+            logger.info(f"[CV] Loaded {len(cv_frames)} frames")
             frame_source = cv_frames
     else:
         cv_frames = generate_mock_cv_frames()
         if args.max_frames > 0:
             cv_frames = cv_frames[:args.max_frames]
-        print("[CV] Source: built-in mock frames")
-        print(f"[CV] Loaded {len(cv_frames)} frames")
+        logger.info("[CV] Source: built-in mock frames")
+        logger.info(f"[CV] Loaded {len(cv_frames)} frames")
         frame_source = cv_frames
 
     print()
 
     coaching_graph = None
     if args.use_langgraph:
-        print("[Setup] Building LangGraph workflow...")
+        logger.info("[Setup] Building LangGraph workflow...")
         try:
             try:
                 from .graph import create_coaching_graph
             except ImportError:
                 from graph import create_coaching_graph
             coaching_graph = create_coaching_graph()
-            print("[Setup] LangGraph enabled")
+            logger.info("[Setup] LangGraph enabled")
         except Exception as e:
-            print(f"[Setup] LangGraph unavailable ({e}); falling back to integration-only mode")
+            logger.info(f"[Setup] LangGraph unavailable ({e}); falling back to integration-only mode")
             args.use_langgraph = False
     
     # ==========================================
     # STEP 3: MAIN PROCESSING LOOP
     # ==========================================
     
-    print("="*60)
-    print("STARTING REAL-TIME PROCESSING")
-    print("="*60)
+    logger.info("="*60)
+    logger.info("STARTING REAL-TIME PROCESSING")
+    logger.info("="*60)
     print()
     
     coaching_count = 0
     
     for i, cv_frame in enumerate(frame_source):
         if args.max_frames > 0 and i >= args.max_frames:
-            print(f"[Run] Reached --max-frames={args.max_frames}; stopping.")
+            logger.info(f"[Run] Reached --max-frames={args.max_frames}; stopping.")
             break
         
         # STEP 3A: IntegrationLayer preprocessing
@@ -149,27 +151,27 @@ def main():
         if coaching_event is None:
             # No coaching needed this frame
             if i % 50 == 0:  # Progress indicator
-                print(f"[Frame {i}] No coaching needed (monitoring...)")
+                logger.info(f"[Frame {i}] No coaching needed (monitoring...)")
             continue
         
         # STEP 3B: Coaching event created!
         coaching_count += 1
         timestamp = cv_frame['timestamp_s']
         
-        print(f"\n{'='*60}")
-        print(f"[t={timestamp:.1f}s] COACHING EVENT #{coaching_count}")
-        print(f"{'='*60}")
-        print(f"Exercise: {coaching_event['exercise']['name']}")
-        print(f"Mistake: {coaching_event['mistake']['type']}")
-        print(f"Severity: {coaching_event['severity']}")
-        print(f"Duration: {coaching_event['mistake']['duration_seconds']:.1f}s")
-        print(f"Persistence: {coaching_event['mistake']['persistence_rate']:.0%}")
-        print(f"Routing: {coaching_event['tier']} ({coaching_event['routing_reason']})")
+        logger.info(f"\n{'='*60}")
+        logger.info(f"[t={timestamp:.1f}s] COACHING EVENT #{coaching_count}")
+        logger.info(f"{'='*60}")
+        logger.info(f"Exercise: {coaching_event['exercise']['name']}")
+        logger.info(f"Mistake: {coaching_event['mistake']['type']}")
+        logger.info(f"Severity: {coaching_event['severity']}")
+        logger.info(f"Duration: {coaching_event['mistake']['duration_seconds']:.1f}s")
+        logger.info(f"Persistence: {coaching_event['mistake']['persistence_rate']:.0%}")
+        logger.info(f"Routing: {coaching_event['tier']} ({coaching_event['routing_reason']})")
         print()
         
         # STEP 3C: Optional LangGraph processing
         if args.use_langgraph and coaching_graph is not None:
-            print("[LangGraph] Starting orchestration...")
+            logger.info("[LangGraph] Starting orchestration...")
 
             initial_state = {
                 "coaching_event": coaching_event,
@@ -190,12 +192,12 @@ def main():
                 final_state["tier_used"],
             )
 
-            print("[Result] ✅ Coaching delivered")
-            print(f"  Tier: {final_state['tier_used']}")
-            print(f"  Latency: {final_state.get('latency_ms', 0):.0f}ms")
+            logger.info("[Result] ✅ Coaching delivered")
+            logger.info(f"  Tier: {final_state['tier_used']}")
+            logger.info(f"  Latency: {final_state.get('latency_ms', 0):.0f}ms")
             if final_state.get("used_fallback"):
-                print(f"  Fallback: {final_state.get('fallback_source', 'unknown')} (ground-truth cue used)")
-            print(f"  Message: \"{final_state['feedback_audio']}\"")
+                logger.info(f"  Fallback: {final_state.get('fallback_source', 'unknown')} (ground-truth cue used)")
+            logger.info(f"  Message: \"{final_state['feedback_audio']}\"")
         else:
             # Integration-only mode: show exactly what the integration layer emits.
             integration_layer.record_coaching_complete(
@@ -203,29 +205,29 @@ def main():
                 response="(integration-only mode)",
                 tier=coaching_event["tier"],
             )
-            print("[Result] ✅ Integration event emitted (no LangGraph)")
-            print(f"  Event JSON: {json.dumps(coaching_event)}")
+            logger.info("[Result] ✅ Integration event emitted (no LangGraph)")
+            logger.info(f"  Event JSON: {json.dumps(coaching_event)}")
         print()
     
     # ==========================================
     # STEP 4: SESSION SUMMARY
     # ==========================================
     
-    print("\n" + "="*60)
-    print("SESSION COMPLETE")
-    print("="*60)
+    logger.info("\n" + "="*60)
+    logger.info("SESSION COMPLETE")
+    logger.info("="*60)
     
     summary = integration_layer.get_session_summary()
     
-    print(f"\nSession ID: {summary['session_id']}")
-    print(f"Duration: {summary['session_duration_seconds']:.1f} seconds")
-    print(f"Total Coaching Events: {summary['total_events']}")
-    print(f"Unique Mistakes Addressed: {len(summary['coached_mistakes'])}")
+    logger.info(f"\nSession ID: {summary['session_id']}")
+    logger.info(f"Duration: {summary['session_duration_seconds']:.1f} seconds")
+    logger.info(f"Total Coaching Events: {summary['total_events']}")
+    logger.info(f"Unique Mistakes Addressed: {len(summary['coached_mistakes'])}")
     
     if summary['coached_mistakes']:
-        print("\nMistakes Coached:")
+        logger.info("\nMistakes Coached:")
         for mistake in summary['coached_mistakes']:
-            print(f"  - {mistake}")
+            logger.info(f"  - {mistake}")
     
     from collections import Counter
     
@@ -237,13 +239,13 @@ def main():
         "tier_3": tier_counts.get("tier_3", 0)
     }
     
-    print(f"\nTier Breakdown:")
-    print(f"  Tier 1 (Cache): {tier_breakdown['tier_1']}")
-    print(f"  Tier 2 (RAG): {tier_breakdown['tier_2']}")
-    print(f"  Tier 3 (Reasoning): {tier_breakdown['tier_3']}")
+    logger.info(f"\nTier Breakdown:")
+    logger.info(f"  Tier 1 (Cache): {tier_breakdown['tier_1']}")
+    logger.info(f"  Tier 2 (RAG): {tier_breakdown['tier_2']}")
+    logger.info(f"  Tier 3 (Reasoning): {tier_breakdown['tier_3']}")
     
     cache_hit_rate = (tier_breakdown['tier_1'] / summary['total_events'] * 100) if summary['total_events'] > 0 else 0
-    print(f"\nCache Hit Rate: {cache_hit_rate:.0f}%")
+    logger.info(f"\nCache Hit Rate: {cache_hit_rate:.0f}%")
 
     fallback_count = sum(
         1 for entry in summary.get("coaching_history", [])
@@ -251,9 +253,9 @@ def main():
     )
     if summary['total_events'] > 0:
         fallback_rate = fallback_count / summary['total_events'] * 100
-        print(f"Ground Truth Fallbacks: {fallback_count} ({fallback_rate:.0f}%)")
+        logger.info(f"Ground Truth Fallbacks: {fallback_count} ({fallback_rate:.0f}%)")
 
-    print("\n✅ Session complete!")
+    logger.info("\n✅ Session complete!")
 
 
 def generate_mock_cv_frames():
@@ -418,8 +420,8 @@ def example_add_cached_pattern():
         timing="immediate"
     )
     
-    print("✅ Added new cached pattern: lunge_forward_lean")
-    print(f"Total cached patterns: {len(layer.list_cached_patterns())}")
+    logger.info("✅ Added new cached pattern: lunge_forward_lean")
+    logger.info(f"Total cached patterns: {len(layer.list_cached_patterns())}")
 
 
 def example_process_single_event():
@@ -461,9 +463,9 @@ def example_process_single_event():
     
     final_state = graph.invoke(initial_state)
     
-    print(f"Response: {final_state['feedback_audio']}")
-    print(f"Tier: {final_state['tier_used']}")
-    print(f"Latency: {final_state.get('latency_ms', 0):.0f}ms")
+    logger.info(f"Response: {final_state['feedback_audio']}")
+    logger.info(f"Tier: {final_state['tier_used']}")
+    logger.info(f"Latency: {final_state.get('latency_ms', 0):.0f}ms")
 
 
 
@@ -478,8 +480,8 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\n\n[Exit] Interrupted by user")
+        logger.info("\n\n[Exit] Interrupted by user")
     except Exception as e:
-        print(f"\n[Error] {e}")
+        logger.info(f"\n[Error] {e}")
         import traceback
         traceback.print_exc()

@@ -15,12 +15,24 @@ import threading
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+from utils.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 # ── Path setup: import from progress_tracker_agent ───────────────────────────
 # Add src/agents/ to sys.path so progress_tracker_agent can be imported
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from langchain_ollama import OllamaLLM
+try:
+    from langchain_ollama import OllamaLLM
+except ModuleNotFoundError:
+    class OllamaLLM:  # type: ignore[override]
+        def __init__(self, *args, **kwargs):
+            raise ModuleNotFoundError(
+                "langchain_ollama is required for SessionManager LLM features. "
+                "Install it with: pip install langchain-ollama"
+            )
+
 from langchain_core.output_parsers import StrOutputParser
 
 from session_prompts import (

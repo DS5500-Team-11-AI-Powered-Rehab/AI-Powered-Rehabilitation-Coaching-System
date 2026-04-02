@@ -17,8 +17,8 @@ from collections import defaultdict
 from datetime import datetime
 import argparse
 
-# Add src to path
-sys.path.insert(0, '/Users/davidryan/Documents_Local/GitHub/AI-Powered-Rehabilitation-Coaching-System/src')
+# Add src to path (use relative path from this file)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
 
 from integration.integration_layer import IntegrationLayer, Config
 
@@ -27,7 +27,7 @@ from integration.integration_layer import IntegrationLayer, Config
 # CONFIGURATION
 # ==========================================
 
-CV_OUTPUT_BASE = Path("/Users/davidryan/Documents_Local/GitHub/AI-Powered-Rehabilitation-Coaching-System/tests/integration_testing")
+CV_OUTPUT_BASE = Path(__file__).resolve().parent
 
 DATASETS = {
     'test': CV_OUTPUT_BASE / "rag_infer_logs_test",

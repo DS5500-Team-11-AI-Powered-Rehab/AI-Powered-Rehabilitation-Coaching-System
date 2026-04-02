@@ -29,6 +29,9 @@ dependencies:
   - notebook
   - ipykernel
 
+  # --- Testing ---
+  - pytest>=7.0.0
+
   - pip:
       # --- Computer Vision ---
       - mediapipe==0.10.14
@@ -41,6 +44,7 @@ dependencies:
       - langchain>=0.1.0
       - langchain-community>=0.0.10
       - langchain-anthropic>=0.1.0
+      - langchain-ollama>=0.1.0
       - langgraph>=0.0.20
 
       # --- LLM Clients ---

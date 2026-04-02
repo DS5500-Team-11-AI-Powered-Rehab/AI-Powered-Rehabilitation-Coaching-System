@@ -10,8 +10,13 @@ tests/integration_testing/synthetic_val_data
 tests/integration_testing/synthetic_train_data
 tests/integration_testing/test_results
 src/integration/__pycache__
+tests/scenario_test/__pycache__
 scripts/__pycache__
 src/__pycache__
+tests/unit/__pycache__
+src/agents/coaching_agent/__pycache__
+src/agents/progress_tracker_agent/__pycache__
+src/utils/__pycache__
 .DS_Store
 src/cv/checkpoints/qevd_full_m_v2/epoch_1250.pt
 data/pt_guidelines
@@ -21,3 +26,4 @@ src/cv/YTDown.com_YouTube_265-lbs-squat-BAD-FORM_Media_UMOYXKux1EI_001_1080p.mp4
 src/cv/YTDown.com_YouTube_Best-Workout-Fails-100-Morons_Media_JxgwVez4DuM_001_1080p.mp4
 src/cv/YTDown.com_YouTube_You-re-doing-it-wrong-How-to-fix-common-_Media_m8K53qx-Gyg_001_480p.mp4
 src/cv/one_video_events.jsonl
+.pytest_cache

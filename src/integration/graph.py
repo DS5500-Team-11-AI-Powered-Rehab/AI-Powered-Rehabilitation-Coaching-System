@@ -9,6 +9,9 @@ try:
 except ImportError:
     from state import CoachingState
 import time
+from utils.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 # Failure strings produced by tier fallbacks — these trigger the quality gate
 _KNOWN_FAILURE_PATTERNS = [
@@ -55,9 +58,9 @@ def enrich_context_node(state: CoachingState) -> CoachingState:
     
     # Coaching history comes from IntegrationLayer
     # (already passed in state["coaching_history"] from main.py)
-    
-    print(f"[Enrich Context] Loaded profile for session: {session_id}")
-    
+
+    logger.info(f"Loaded profile for session: {session_id}")
+
     return state
 
 
@@ -84,12 +87,12 @@ def tier_1_cache_node(state: CoachingState) -> CoachingState:
         # Use cached response
         state["coaching_response"] = cached_data["response"]
         state["delivery_timing"] = cached_data.get("timing", "immediate")
-        print(f"[Tier 1] Cache hit: {cache_key}")
+        logger.debug(f"Cache hit: {cache_key}")
     else:
         # Fallback if cache miss (shouldn't happen with proper routing)
         state["coaching_response"] = f"Maintain proper form"
         state["delivery_timing"] = "immediate"
-        print(f"[Tier 1] Cache miss (unexpected): {cache_key}")
+        logger.warning(f"Cache miss (unexpected): {cache_key}")
     
     state["tier_used"] = "tier_1"
     latency = (time.time() - start_time) * 1000
@@ -116,7 +119,7 @@ def tier_2_rag_node(state: CoachingState) -> CoachingState:
     
     # Build RAG query
     query = f"How to correct {mistake_type} during {exercise}"
-    print(f"[Tier 2] RAG Query: {query}")
+    logger.debug(f"RAG Query: {query}")
     
     # RAG Retrieval using ChromaDB
     retrieved_docs = []
@@ -147,16 +150,16 @@ def tier_2_rag_node(state: CoachingState) -> CoachingState:
         # Extract document texts
         if results and results['documents'] and len(results['documents']) > 0:
             retrieved_docs = results['documents'][0]
-            print(f"[Tier 2] Retrieved {len(retrieved_docs)} documents from RAG")
+            logger.debug(f"Retrieved {len(retrieved_docs)} documents from RAG")
         else:
-            print(f"[Tier 2] No documents found in ChromaDB, using fallback")
+            logger.warning(f"No documents found in ChromaDB, using fallback")
             retrieved_docs = [
                 f"Physical therapy guidelines for {mistake_type}: Ensure proper alignment and form...",
                 f"Common corrections for {exercise}: Focus on controlled movement..."
             ]
             
     except Exception as e:
-        print(f"[Tier 2] RAG retrieval failed: {e}. Using fallback.")
+        logger.error(f"RAG retrieval failed: {e}. Using fallback.")
         retrieved_docs = [
             f"Physical therapy guidelines for {mistake_type}: Ensure proper alignment and form...",
             f"Common corrections for {exercise}: Focus on controlled movement..."
@@ -200,10 +203,10 @@ Generate a brief coaching cue to correct this mistake:""")
         })
         
         state["coaching_response"] = response.content.strip()
-        print(f"[Tier 2] LLM generated coaching cue")
+        logger.info(f"LLM generated coaching cue")
         
     except Exception as e:
-        print(f"[Tier 2] LLM generation failed: {e}. Using fallback.")
+        logger.error(f"LLM generation failed: {e}. Using fallback.")
         state["coaching_response"] = f"Focus on correcting {mistake_type} - maintain proper form throughout the movement."
     
     state["delivery_timing"] = "rep_end"
@@ -212,7 +215,7 @@ Generate a brief coaching cue to correct this mistake:""")
     latency = (time.time() - start_time) * 1000
     state["latency_ms"] = latency
     
-    print(f"[Tier 2] RAG + LLM generation complete ({latency:.0f}ms)")
+    logger.info(f"RAG + LLM generation complete ({latency:.0f}ms)")
     
     return state
 
@@ -237,11 +240,11 @@ def tier_3_reasoning_node(state: CoachingState) -> CoachingState:
     coaching_history = state.get("coaching_history", [])
     patient_profile = state.get("patient_profile", {})
     
-    print(f"[Tier 3] Starting complex reasoning...")
+    logger.info(f"Starting complex reasoning...")
     
     # === STEP 1: RAG Retrieval (3-5 documents) ===
     query = f"Detailed analysis and correction strategies for {mistake_type} during {exercise}"
-    print(f"[Tier 3] RAG Query: {query}")
+    logger.debug(f"RAG Query: {query}")
     
     retrieved_docs = []
     try:
@@ -271,9 +274,9 @@ def tier_3_reasoning_node(state: CoachingState) -> CoachingState:
         # Extract document texts
         if results and results['documents'] and len(results['documents']) > 0:
             retrieved_docs = results['documents'][0]
-            print(f"[Tier 3] Retrieved {len(retrieved_docs)} documents from RAG")
+            logger.debug(f"Retrieved {len(retrieved_docs)} documents from RAG")
         else:
-            print(f"[Tier 3] No documents found in ChromaDB, using fallback")
+            logger.warning(f"No documents found in ChromaDB, using fallback")
             retrieved_docs = [
                 f"Physical therapy guidelines for {mistake_type}: Detailed biomechanical analysis...",
                 f"Compensation patterns in {exercise}: Common causes and corrections...",
@@ -283,7 +286,7 @@ def tier_3_reasoning_node(state: CoachingState) -> CoachingState:
             ]
             
     except Exception as e:
-        print(f"[Tier 3] RAG retrieval failed: {e}. Using fallback.")
+        logger.error(f"RAG retrieval failed: {e}. Using fallback.")
         retrieved_docs = [
             f"Physical therapy guidelines for {mistake_type}: Detailed biomechanical analysis...",
             f"Compensation patterns in {exercise}: Common causes and corrections...",
@@ -415,10 +418,10 @@ Perform your analysis and generate a detailed coaching response."""),
         state["movement_analysis"] = f"Agent reasoning completed with {len(tools)} tools"
         state["coaching_response"] = agent_output
         
-        print(f"[Tier 3] Agent reasoning complete - generated detailed coaching")
+        logger.info(f"Agent reasoning complete - generated detailed coaching")
         
     except Exception as e:
-        print(f"[Tier 3] Agent execution failed: {e}. Using fallback reasoning.")
+        logger.error(f"Agent execution failed: {e}. Using fallback reasoning.")
         
         # Fallback: Manual reasoning without agent
         context = "\n".join(retrieved_docs[:3])
@@ -450,7 +453,7 @@ Perform your analysis and generate a detailed coaching response."""),
     latency = (time.time() - start_time) * 1000
     state["latency_ms"] = latency
     
-    print(f"[Tier 3] Complex reasoning complete ({latency:.0f}ms)")
+    logger.info(f"Complex reasoning complete ({latency:.0f}ms)")
     
     return state
 
@@ -474,7 +477,7 @@ def coaching_agent_node(state: CoachingState) -> CoachingState:
     # Skip polishing for Tier 1 (cached responses are already polished)
     if tier_used == "tier_1":
         state["feedback_audio"] = raw_response
-        print(f"[Coaching Agent] Tier 1 response - skipping polish")
+        logger.debug(f"Tier 1 response - skipping polish")
         return state
     
     # Polish response with LLM
@@ -530,7 +533,7 @@ Output ONLY the polished coaching message, nothing else."""),
         
         # Validation: Ensure polished response isn't empty or too different
         if not polished or len(polished) < 10:
-            print(f"[Coaching Agent] Polish result too short, using original")
+            logger.warning(f"Polish result too short, using original")
             polished = raw_response
         elif len(polished) > len(raw_response) * 2:
             print(f"[Coaching Agent] Polish result too long, using original")
