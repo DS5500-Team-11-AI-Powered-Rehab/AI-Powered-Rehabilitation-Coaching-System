@@ -29,6 +29,9 @@ dependencies:
   - notebook
   - ipykernel
 
+  # --- Testing ---
+  - pytest>=7.0.0
+
   - pip:
       # --- Computer Vision ---
       - mediapipe==0.10.14
