@@ -65,7 +65,7 @@ def main():
         f"min_confidence={config.MIN_CONFIDENCE}, "
         f"min_duration_s={config.MIN_DURATION_SECONDS})"
     )
-
+    
     # Initialize ground-truth fallback library
     logger.info("[Setup] Loading ground-truth coaching library...")
     gt_library_path = "data/ground_truth_coaching_cues.json"
@@ -130,8 +130,6 @@ def main():
         except Exception as e:
             logger.info(f"[Setup] LangGraph unavailable ({e}); falling back to integration-only mode")
             args.use_langgraph = False
-<<<<<<< HEAD
-=======
 
     # ── SessionRunner (preferred full-stack path) ───────────────────────────
     global _session_runner
@@ -156,7 +154,6 @@ def main():
         except Exception as e:
             print(f"[Setup] SessionRunner unavailable ({e}); falling back to --use-langgraph / integration-only mode")
             args.session_runner = False
->>>>>>> d6f2ad1 (feat: Implement Tier 1 cache builder and integrate with coaching agent + decreased Tier 3 reliance)
     
     # ==========================================
     # STEP 3: MAIN PROCESSING LOOP
