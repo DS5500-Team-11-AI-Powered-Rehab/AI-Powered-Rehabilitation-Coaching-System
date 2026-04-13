@@ -1,195 +1,220 @@
-# AI-Powered-Rehabilitation-Coaching-System
+# AI Agent for Medical Rehabilitation Coaching
 
-Our final project purpose is to build an end-to-end prototype of an at-home RAG coaching agent that can act in place of a physical therapist to provide medical feedback to a patient when they are performing rehabilitation exercises. We are a group of 4, Jason, David, Andre and Rongjia, working together as Masters students as part of our Northeastern Data Science Capstone course. This project addresses what we believe is the under-served at-home phase of injury recovery utilizing a multimodal AI coaching agent that combines computer-vision-based (CV) movement analysis with a retrieval-augmented generation (RAG) framework to deliver real-time, clinically grounded feedback during otherwise unsupervised patient physiotherapy exercise. While grounding both the CV and RAG pipelines in applied research, our focus was to build out a functional minimum viable product that is deployable on consumer hardware, especially inexpensive smartphones, and that, while requiring internet connectivity for LLM API prompting, minimizes computational costs.
+**Virtual Physical Therapy Assistant (VPA)** — a multimodal AI agent that watches you exercise, identifies form errors, and coaches you in real time, from your computer or phone.
 
-## 🎯 The Problem
+Built by **Andre Barle, Jason Leung, David Ryan, and Rongjia Sun** as part of the Northeastern University DS 5500: Data Science Capstone (April 2026).
 
-Injury rehabilitation fundamentally depends on the correct, consistent execution of prescribed exercises over an extended recovery period. In clinical settings, the physiotherapist provides real-time observational feedback such as identifying compensatory movements, unsafe loading patterns, and deviations from prescribed form, and then adjusts the exercise program as the patient progresses. Once discharged to home-based care, patients lose access to this supervisory feedback loop entirely. 
+---
 
-This project frames the core challenge as a multi-task machine learning problem combining three distinct components:
-- **Multi-label movement quality classification** — Given a variable-length video sequence of a patient performing a rehabilitation exercise, simultaneously classify exercise identity, form errors, movement speed, range of motion, torso orientation, and lateral direction.
-- **Retrieval-augmented coaching feedback generation** — Given a detected movement error and its clinical context, retrieve the most relevant physiotherapy guidance from a curated medical corpus and generate patient-facing coaching feed-back that is accurate, safe, and actionable. 
-- **Stateful multi-agent orchestration (integration layer)** — Route detected errors through a three-tier response system: cached responses for known patterns, RAG-grounded LLM generation for novel errors, and full multi-step agent reasoning for persistent or complex cases
+## The Problem
 
-## 🚀 Our Solution
+~70–76% of patients are non-compliant with home rehabilitation exercises. Once discharged from clinical care, patients lose access to the supervisory feedback loop that a physiotherapist provides — leading to compensatory movements, re-injury, and prolonged recovery. The core challenge is replicating that in-clinic feedback experience at home, on consumer hardware.
 
-**Virtual Physiotherapy Assistant (VPA)** is an intelligent AI system that acts as your personal virtual physiotherapist — available anytime, anywhere, directly from your phone or webcam.
+---
 
-### Core Capabilities
+## Our Solution
 
-- **Real-time pose estimation & movement analysis** — Uses your camera to track body keypoints and evaluate exercise execution.
-- **Detailed, constructive feedback** — Tells you exactly what you're doing **correctly**, **moderately well**, or **poorly**, with specific, actionable suggestions to correct form (e.g. "Keep your knee aligned over your ankle — try shifting weight slightly forward").
-- **Retrieval-Augmented Generation (RAG)** recommendation engine — Personalizes advice based on:
-  - Your specific injury / condition
-  - Doctor / physiotherapist recommendations
-  - Evidence-based rehab protocols for common injuries
-- **Patient-centric design** — Aims to increase adherence through clear, encouraging, human-like coaching.
+The VPA combines three tightly integrated components:
 
-The goal is simple: help people recover **faster**, **safer**, and **more consistently** from home — while reducing the burden on healthcare systems.
+| Component | Role |
+|---|---|
+| **Computer Vision Pipeline** | Classifies exercises and detects form mistakes using a fine-tuned MediaPipe + PoseTCN model |
+| **Integration Layer** | Cleans raw CV output, aggregates predictions over time, and routes coachable events to the appropriate response tier |
+| **RAG Pipeline + Multi-Agent System** | Constructs clinically grounded feedback via a RAG-enabled LLM; tracks longitudinal progress across sessions |
 
-## ✨ Key Features (Initial Version)
+---
 
-- Video-based real-time exercise assessment
-- Multi-level feedback (good / moderate / needs improvement)
-- Personalized recommendations via RAG (injury-specific + protocol-aware)
-- Chat interface for asking questions about exercises, pain, or progress
-- (Planned) Progress tracking & adherence reports
+## Architecture
 
-## 🛠️ Technology Highlights
+![Architecture Diagram](images/architecture_diagram.png)
 
-- **Computer Vision** → Human pose estimation (likely MediaPipe / OpenPose / RTMPose family)
-- **AI Feedback Engine** → LLM-powered critique + natural language generation
-- **Retrieval-Augmented Generation (RAG)** → For retrieving and grounding advice in trusted physiotherapy knowledge
-- **Frontend** → (Web / mobile app — webcam access)
-- **Backend** → Python-based inference pipeline
+### Computer Vision Pipeline
 
-## 📦 Environment Setup
+- Overlays **Google MediaPipe** pose estimation over ~290k exercise video clips from the QEVD dataset
+- Extracts **33 keypoints per frame** (x, y, z, visibility), normalized and centered to hips
+- Each frame becomes a **198-dimensional feature vector**: position (66), velocity (66), depth (33), confidence (33)
+- Pose sequences are stored as `.npz` files and processed to memory-mapped `.f16.mmap` format for fast training
+
+**PoseTCNTyped Model** — a Temporal Convolutional Network with 8 multi-task output heads:
+- 6 layers of 1D dilated causal convolutions (kernel=3, exponential dilation)
+- Heads: exercise identity, mistake types, speed, range of motion, height, torso, direction, no-issue flag
+- Optimizer: AdamW (lr=1e-4, weight decay=1e-4, gradient clipping=1.0)
+- **~80% accuracy across 148 exercise classes**
+
+### Integration Layer — The Intelligence Bridge
+
+15 FPS × 60s = 900 raw predictions/minute. The integration layer filters this to actionable coaching events via a four-stage pipeline:
+
+1. **Temporal Aggregation** — 10s sliding window, ≥30% persistence, ≥0.35 confidence, ≥3s duration
+2. **Deduplication** — 10s cooldown; re-coaches at 20s if a mistake persists
+3. **Severity Classification** — High / Medium / Low based on safety-critical keywords
+4. **3-Tier Routing Decision** — routes to the appropriate response pipeline
+
+Validated on **1,509 QEVD videos**: ~95% noise reduction, 27–32% video coverage (persistent error detection).
+
+### 3-Tier Response System
+
+| Tier | Trigger | Latency |
+|---|---|---|
+| **Tier 1** — Cache | Low-risk or known pattern | ~50ms |
+| **Tier 2** — RAG + LLM | Novel errors requiring clinical grounding | ~2–5s |
+| **Tier 3** — CoT Agent | Complex or high-risk mistakes | ~5–8s |
+
+### RAG Module — Clinically Grounded Coaching
+
+- **Knowledge base**: physiotherapy textbooks (Kisner & Colby, Houglum) + NHS MSK patient guides
+- **1,486 chunks** indexed in ChromaDB with `sentence-transformers/all-MiniLM-L6-v2`
+- Queries built dynamically from patient context (condition + rehab phase + concern); k=3 retrieval
+- Clinical context injected with strict boundary constraints to reduce hallucination
+
+### Multi-Agent System
+
+**Coaching Agent** (Claude Sonnet 4.5):
+- Ingests coaching events every 5s from the CV module via a session state machine
+- 30s inactivity → exercise ends → exercise-level feedback generated (what went wrong, what was good, one correction cue)
+- 120s inactivity → rehab phase ends → phase report generated + Phase JSON exported
+
+**Progress Tracking Agent** (Gemma 3:4b, runs locally via Ollama):
+- Reads cumulative Phase JSONs across sessions
+- Analyzes pain trend, quality score trend, persistent mistakes, and exercise progression
+- Generates a narrative longitudinal progress report
+
+Phase JSON is the structured inter-agent memory: no database required.
+
+### LLM Evaluation & Model Selection
+
+3 models evaluated on 28 expert-authored physiotherapy questions across 8 metrics (fact coverage, semantic coverage, completeness, safety pass rate, professional referral rate, medical accuracy, latency, cost):
+
+| Model | Overall | Fact Cov. | Sem Cov. | Completeness | Latency | Cost |
+|---|---|---|---|---|---|---|
+| **Claude Sonnet 4.5** | **58.93** | **41.5%** | **69.7%** | **46.9%** | 8.3s | $0.244 |
+| Qwen2.5:7b | 54.18 | 31.4% | 53.1% | 35.7% | 13.5s | $0 |
+| Gemma3:4b | 54.04 | 29.8% | 47.6% | 34.1% | 12.3s | $0 |
+
+All 3 models achieved 100% safety pass rate, professional referral rate, and medical accuracy.
+
+**Decision**: Claude Sonnet 4.5 selected for the Coaching Agent. Gemma 3:4b selected for the Progress Tracking Agent (runs locally, zero API cost).
+
+---
+
+## Demo
+
+### Session Setup & Patient Profile
+
+![Demo — Session Setup](images/demo1.png)
+
+### Live Coaching Transcript
+
+![Demo — Live Coaching](images/demo2.png)
+
+### Inference Events & Session Log
+
+![Demo — Inference Events](images/demo3.png)
+
+### Session Report
+
+![Demo — Session Report](images/demo4.png)
+
+---
+
+## Environment Setup
 
 ### Prerequisites
-- **Conda** (Miniconda or Anaconda) installed on your system
-- **Python 3.11** (specified in the environment file)
 
-### Installation Steps
+- **Conda** (Miniconda or Anaconda)
+- **Python 3.11**
+- **Ollama** (for local Gemma 3:4b inference)
+- An **Anthropic API key** (for Claude Sonnet 4.5)
 
-1. **Clone the repository** (if you haven't already):
-   ```bash
-   git clone https://github.com/DS5500-Team-11-AI-Powered-Rehab/AI-Powered-Rehabilitation-Coaching-System.git
-   cd AI-Powered-Rehabilitation-Coaching-System
-   ```
+### Installation
 
-2. **Create the Conda environment** from the provided environment file:
-   ```bash
-   conda env create -f rehab_ai_env.yml
-   ```
-
-3. **Activate the environment**:
-   ```bash
-   conda activate rehab_ai_env
-   ```
-
-### What's Included
-
-The environment includes:
-- **Core scientific stack**: NumPy, Pandas, Matplotlib, Seaborn, scikit-learn
-- **Computer Vision**: OpenCV, MediaPipe
-- **Deep Learning**: PyTorch (CPU-only), TorchVision, TorchAudio
-- **RAG / Vector Database**: ChromaDB, Sentence Transformers
-- **LLM Frameworks**: LangChain, LangGraph
-- **LLM Clients**: OpenAI, Anthropic, Ollama
-- **Data Processing**: PyPDF, python-docx, BeautifulSoup4
-- **Jupyter**: Notebook environment for development and experimentation
-- **Additional tools**: Transformers, Accelerate, Spacy, and more
-
-### Deactivating the Environment
-
-When you're done, deactivate the environment:
 ```bash
-conda deactivate
+git clone https://github.com/DS5500-Team-11-AI-Powered-Rehab/AI-Powered-Rehabilitation-Coaching-System.git
+cd AI-Powered-Rehabilitation-Coaching-System
+
+conda env create -f rehab_ai_env.yml
+conda activate rehab_ai_env
 ```
 
-## 📁 Project Structure
+Copy `.env.example` to `.env` and add your API keys:
+
+```bash
+cp .env.example .env
+```
+
+### Running the App
+
+```bash
+# Ingest the PT knowledge base into ChromaDB
+python scripts/ingest_pt_data.py
+
+# Pre-compute Tier 1 cache responses
+python scripts/build_tier1_cache.py
+
+# Launch the Streamlit frontend
+streamlit run frontend/streamlit_app.py
+```
+
+---
+
+## Project Structure
 
 ```
 AI-Powered-Rehabilitation-Coaching-System/
 │
-├── README.md                        # This file — system overview
-├── LICENSE                          # Project license
+├── README.md
 ├── rehab_ai_env.yml                 # Conda environment specification
-├── .env / .env.example              # Environment variables (API keys, model configs)
-├── .gitignore                       # Git ignore rules
+├── .env.example                     # API key template (copy to .env)
+├── .gitignore
+├── pytest.ini
+├── LICENSE
 │
-├── cache/                           # Cached responses & precomputed data
-│   └── tier1_responses/             # Tier 1 cached coaching responses
+├── cache/                           # Tier 1 cached responses
 │
-├── figures/                         # Project visualizations & diagrams
+├── data/                            # Input data directory
 │
-├── notebooks/                       # Jupyter notebooks for exploration & evaluation
-│   ├── llm_comprehensive_evaluation.ipynb
-│   ├── validated_test_questions.json
-│   └── evaluation_results/
-│       ├── aggregate_metrics.csv
-│       ├── EVALUATION_SUMMARY.md
-│       └── *.csv                    # Detailed model evaluation results
+├── logs/                            # Session logs & debug output
+│
+├── models/                          # Trained CV model checkpoints
+│
+├── results/                         # Experiment results & metrics
+│
+├── figures/                         # Project visualizations
+│
+├── images/                          # Architecture diagram & demo screenshots
+│   ├── architecture_diagram.png
+│   ├── demo1.png
+│   ├── demo2.png
+│   ├── demo3.png
+│   └── demo4.png
 │
 ├── src/                             # Production code
+│   ├── __init__.py
 │   │
-│   ├── cv/                          # Computer Vision pipeline
+│   ├── cv/                          # Computer Vision Pipeline
+│   │   ├── models/                  # Model checkpoints
+│   │   ├── extract_pose_cache.py    # Extract pose data from videos
+│   │   ├── infer_stream_v2.py       # Real-time webcam inference (15 FPS)
+│   │   ├── precompute_memmap.py     # Convert pose to memory-mapped format
+│   │   └── train_from_memmap.py     # PoseTCNTyped training script
+│   │
+│   ├── integration/                 # Integration Layer (CV → LLM Bridge)
 │   │   ├── __init__.py
-│   │   ├── extract_pose_cache.py    # Extract pose data from video cache
-│   │   ├── infer_stream.py          # Real-time pose inference on video stream
-│   │   ├── precompute_memmap.py     # Precompute pose data to memory-mapped files
-│   │   └── train_from_memmap.py     # Train models from precomputed pose data
+│   │   ├── README.md
+│   │   ├── integration_layer.py     # Temporal aggregation & routing
+│   │   ├── graph.py                 # LangGraph workflow definition
+│   │   ├── state.py                 # State schema & management
+│   │   ├── ground_truth_library.py  # Ground truth definitions
+│   │   └── main.py                  # Integration entry point
 │   │
-│   ├── integration/                 # Integration layer (CV → LLM bridge)
-│   │   ├── __init__.py
-│   │   ├── integration_layer.py     # Core temporal filtering & routing logic
-│   │   ├── graph.py                 # LangGraph workflow integration
-│   │   ├── state.py                 # State management for integration layer
-│   │   ├── main.py                  # Entry point for integration pipeline
-│   │   └── README.md                # Integration layer documentation
-│   │
-│   ├── rag/                         # Retrieval-Augmented Generation
-│   │   ├── __init__.py
-│   │   ├── ingest.py                # Chunk & embed PT guidelines → ChromaDB
-│   │   ├── retriever.py             # Query interface over ChromaDB
-│   │   └── prompt_templates.py      # Tier 2 slot-based prompts
-│   │
-│   ├── agents/                      # LangGraph multi-agent system
-│   │   ├── __init__.py
-│   │   ├── state.py                 # Shared LangGraph state schema
-│   │   ├── movement_analysis.py     # Movement Analysis Agent
-│   │   ├── coaching.py              # Coaching Agent (conversational memory)
-│   │   ├── progress.py              # Progress Tracking Agent
-│   │   └── orchestrator.py          # LangGraph graph definition & routing
-│   │
-│   ├── feedback/                    # Feedback generation & delivery
-│   │   ├── __init__.py
-│   │   ├── tier1_cache.py           # Load/serve pre-computed responses
-│   │   ├── tier2_generator.py       # RAG + LLM generation
-│   │   ├── tier3_reasoner.py        # Full agent reasoning pass
-│   │   └── delivery.py              # Timing logic (immediate / rep-end / rest)
-│   │
-│   └── utils/
-│       ├── __init__.py
-│       ├── config.py                # Load .env, model names, thresholds
-│       └── logging.py               # Logging utilities
-│
-├── tests/                           # Testing suite
-│   ├── integration_testing/
-│   │   ├── test_integration.py      # Integration layer test runner
-│   │   ├── test_tune_thresholds.py  # Threshold tuning analyzer
-│   │   ├── test_visualize.py        # Visualization generator
-│   │   ├── generate_synthetic_data.py  # Generate synthetic test data
-│   │   ├── quick_start_test.sh      # Automated test pipeline
-│   │   ├── TEST_README.md           # Comprehensive testing guide
-│   │   └── tuned_config.json        # Validated threshold configuration
-│
-├── scripts/                         # One-off runnable scripts
-│   ├── ingest_pt_data.py            # Populate ChromaDB with PT guidelines
-│   ├── build_tier1_cache.py         # Pre-compute top mistake responses
-│   └── run_demo.py                  # End-to-end demo runner
-│
-└── docs/
-    └── api_contracts.md             # CV ↔ Integration ↔ LLM interface specs
-```
-
-## Why This Matters
-
-Incorrect exercise performance and low adherence are well-documented causes of prolonged recovery times and increased healthcare costs. By combining state-of-the-art **pose estimation**, **generative AI**, and **personalized retrieval**, VPA aims to bring high-quality, 24/7 physiotherapy guidance to anyone with a smartphone or laptop.
-
-We're building this as an open-source project to encourage collaboration between AI researchers, physiotherapists, clinicians, and rehab tech enthusiasts.
-
-## 🚧 Current Status
-
-Early / proof-of-concept stage  
-Actively developing core pose → feedback loop and RAG integration
-
-Contributions, feedback, and domain expertise (especially from physiotherapists) are **very welcome**!
-
----
-
-**Topics**: #pose-estimation #human-pose-estimation #computer-vision #rehabilitation #physiotherapy #healthcare-ai #exercise-feedback #rag #ai-healthcare #physical-therapy
-
-Star ⭐ the repo if you're interested in AI for healthcare & rehabilitation!
-
-Let's make high-quality rehab accessible to everyone.
+│   ├── agents/                      # Multi-Agent System (LangGraph)
+│   │   ├── coaching_agent/          # Real-Time Coaching Feedback
+│   │   │   ├── chroma_coaching_db/  # Coaching RAG vector store
+│   │   │   ├── README.md
+│   │   │   ├── coaching_agent.py
+│   │   │   ├── session_manager.py   # Session state machine
+│   │   │   ├── session_prompts.py   # Prompt templates
+│   │   │   ├── demo_session.py
+│   │   │   └── demo_session.ipynb
+│   │   │
+│   │   └── progress_tracker_agent/  # Longitudinal Progress Tracking
